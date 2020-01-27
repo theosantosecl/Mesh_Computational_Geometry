@@ -1,0 +1,128 @@
+#ifndef MESH_H
+#define MESH_H
+
+#include <QGLWidget>
+#include <iostream>
+#include <fstream>
+
+// TO MODIFY
+// Advice => You should create a new file for each module but not necessarily for each class
+class Point
+{
+    double _x;
+    double _y;
+    double _z;
+    int _numFace;
+    int _numUnderlyingPoint;
+
+
+public:
+    Point():_x(),_y(),_z(), _numUnderlyingPoint() {}
+    Point(float x_, float y_, float z_):_x(x_),_y(y_),_z(z_), _numUnderlyingPoint() {}
+    // get
+    double x() const { return _x; }
+    double y() const { return _y; }
+    double z() const { return _z; }
+
+
+    int getNumFace() {return _numFace;}
+    void setNumFace(int numFace){_numFace = numFace;}
+    int getNumUnderlyingPoint() {return _numUnderlyingPoint;}
+    void setNumUnderlyingPoint(int numUnderlyingPoint) {_numUnderlyingPoint = numUnderlyingPoint;}
+};
+
+class Face
+{
+    Point _point1;
+    Point _point2;
+    Point _point3;
+    QVector<Face> _adjFaces;
+public:
+    Face(): _point1(), _point2(), _point3() {}
+    Face(Point point1_, Point point2_, Point point3_): _point1(point1_), _point2(point2_), _point3(point3_) {}
+    //get
+    Point point(int i) const {
+        if (i == 1){
+            return _point1;
+        }
+        if (i == 2){
+            return _point2;
+        }
+        if (i == 3){
+            return _point3;
+        }
+        else {
+            return _point1;
+        }
+    }
+
+    QVector<Face> getAdjFaces() {
+        return _adjFaces;
+    }
+    void setAdjFaces(QVector<Face> adjFaces){
+       _adjFaces = adjFaces;
+    }
+
+    void addAdjFaces(Face& newFace){
+        _adjFaces.append(newFace);
+    }
+
+    bool hasAdjFace(Face potentialAdjFace){
+        bool rep = false;
+        for (int i = 0; i < _adjFaces.length(); i++){
+            if (&_adjFaces[i] == &potentialAdjFace){
+                rep = true;
+            }
+        }
+        return rep;
+    }
+
+    bool verifyAdj(Face face2){
+        QVector<Point> points1 = {_point1, _point2, _point3};
+        QVector<Point> points2 = {face2.point(1), face2.point(2), face2.point(3)};
+        bool aumoinsun = false;
+        bool aumoinsdeux = false;
+        int i = 0;
+        while ( !aumoinsdeux && i<3){
+            int j = 0;
+            while (!aumoinsdeux && j<3){
+                if (&(points1[i]) == &(points2[j])){
+                    if (aumoinsun) aumoinsdeux = true;
+                    else aumoinsun = true;
+                }
+                j++;
+            }
+            i++;
+        }
+        return aumoinsdeux;
+    }
+};
+
+//** TO MODIFY
+class Mesh
+{
+    QVector<Point> vertexTab;
+    QVector<Face> facesTab;
+    Point underlyingPoint;
+//int faces[12]={
+//        0,1,2, // 1
+//        1,3,2, // 2
+//        3,0,2, // 3
+//        0,1,3  // 4
+//    }; // To be replaced by a vector of faces
+public:
+    Mesh();
+    
+    void drawMesh();
+    void drawMeshWireFrame();
+    Face getFace(Point point);
+    Point getUnderlyingPoint();
+    void createFromData(std::string path);
+    void addAdjacence(int face1, int face2);
+    void addAdjacence(Face& face1, Face& face2);
+    void testAdjRandom();
+
+
+};
+
+#endif // MESH_H
