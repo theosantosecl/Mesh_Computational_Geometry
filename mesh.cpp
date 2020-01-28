@@ -24,6 +24,10 @@ Mesh::Mesh()
     testAdjRandom();
     testAdjRandom();
 
+    for (Iterator_on_vertices it = this->beginVertices(); !(it == this->endVertices()); ++it){
+        std::cout<<it.getIndice()<<" "<<(*it).getIndice()<<std::endl;
+    }
+
 
 
 
@@ -126,7 +130,7 @@ void Mesh::createFromData(std::string path){
         line.erase(0, line.find(delimiter) + delimiter.length());
 
 
-        Face newFace = Face(idPoint1,idPoint2,idPoint3);
+        Face newFace = Face(idPoint1,idPoint2,idPoint3,i);
 
         facesTab.append(newFace);
 
@@ -227,6 +231,29 @@ void Mesh::addAdjacence(Face& face1, Face& face2){
 void Mesh::addAdjacence(int indFace1, int indFace2){
     facesTab[indFace1].addAdjFaces(indFace2);
     facesTab[indFace2].addAdjFaces(indFace1);
+}
+
+
+Iterator_on_faces Mesh::beginFaces(){
+    Iterator_on_faces it(this);
+    return it;
+}
+
+Iterator_on_faces Mesh::endFaces(){
+    Iterator_on_faces it(this);
+    it.setIndice(this->getNbFaces());
+    return it;
+}
+
+Iterator_on_vertices Mesh::beginVertices(){
+    Iterator_on_vertices it(this);
+    return it;
+}
+
+Iterator_on_vertices Mesh::endVertices(){
+    Iterator_on_vertices it(this);
+    it.setIndice(this->getNbVertices());
+    return it;
 }
 
 

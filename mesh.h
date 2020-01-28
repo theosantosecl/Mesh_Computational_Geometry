@@ -5,7 +5,12 @@
 #include <iostream>
 #include <fstream>
 
-// Advice => You should create a new file for each module but not necessarily for each class
+
+
+//Iterateurs
+class Iterator_on_faces;
+class Iterator_on_vertices;
+
 class Point
 {
     double _x;
@@ -114,9 +119,14 @@ public:
         }
         return aumoinsdeux;
     }
+
+
+
 };
 
-//** TO MODIFY
+
+
+
 class Mesh
 {
     QVector<Point> vertexTab;
@@ -133,12 +143,99 @@ public:
 
     void drawMesh();
     void drawMeshWireFrame();
-    Face getFace(Point point);
+    Face getFace(Point point); // INUTILE POUR LE MOMENT
+    Face getFace(int indice){return facesTab[indice];}
+    Face* getFacePointeur(int indice){return &(facesTab[indice]);}
+    Point* getPointPointeur(int indice){ return &(vertexTab[indice]);}
     Point getUnderlyingPoint();
     void createFromData(std::string path);
     void addAdjacence(int face1, int face2);
     void addAdjacence(Face& face1, Face& face2);
     void testAdjRandom();
+    int getNbFaces(){ return facesTab.length();}
+    int getNbVertices(){ return vertexTab.length();}
+
+    Iterator_on_faces beginFaces();
+    Iterator_on_faces endFaces();
+    Iterator_on_vertices beginVertices();
+    Iterator_on_vertices endVertices();
+
+
+
+};
+
+class Iterator_on_faces{
+    int _indice;
+    Mesh* _mesh;
+
+public:
+    Iterator_on_faces(Mesh* mesh_): _mesh(mesh_){
+        _indice = 0;
+    }
+
+    void operator++(){
+        _indice++;
+    }
+
+    Face& operator*(){
+        return *(_mesh->getFacePointeur(_indice));
+    }
+
+    Face* operator->(){
+        return _mesh->getFacePointeur(_indice);
+    }
+
+    bool operator==(Iterator_on_faces it2){
+        return (_indice == it2.getIndice());
+    }
+
+
+
+    void setIndice(int ind){
+        _indice = ind;
+    }
+
+    int getIndice(){
+        return _indice;
+    }
+
+};
+
+
+class Iterator_on_vertices{
+    int _indice;
+    Mesh* _mesh;
+
+public:
+    Iterator_on_vertices(Mesh* mesh_): _mesh(mesh_){
+        _indice = 0;
+    }
+
+    void operator++(){
+        _indice++;
+    }
+
+    Point& operator*(){
+        return *(_mesh->getPointPointeur(_indice));
+    }
+
+    Point* operator->(){
+        return _mesh->getPointPointeur(_indice);
+    }
+
+    bool operator==(Iterator_on_vertices it2){
+        return (_indice == it2.getIndice());
+    }
+
+
+
+    void setIndice(int ind){
+        _indice = ind;
+    }
+
+    int getIndice(){
+        return _indice;
+    }
 
 };
 
