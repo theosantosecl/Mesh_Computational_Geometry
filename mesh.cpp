@@ -8,11 +8,16 @@ Mesh::Mesh()
 
     std::cout<<"Taille vertex : "<<vertexTab.length()<<std::endl;
     std::cout<<"Taille faces : "<<facesTab.length()<<std::endl;
-    for (int i = 96700; i < 96713; i++){
-        Face face0 = facesTab[i];
-        std::cout<<"Taille    : "<<face0.getAdjFaces().length()<<std::endl;
+
+
+    for (int i = 0; i < 10; i++){
+        std::cout<< "Nombres voisins de "<<i<<" : "<<facesTab[i].getAdjFaces().length()<<std::endl;
     }
 
+
+    for (int i = 96700; i < 96713; i++){
+        std::cout<<"Nombres voisins de "<<i<<" : "<< facesTab[i].getAdjFaces().length()<<std::endl;
+    }
 
     testAdjRandom();
     testAdjRandom();
@@ -85,7 +90,7 @@ void Mesh::createFromData(std::string path){
         z_i =  std::stof(substring);
         line.erase(0, line.find(delimiter) + delimiter.length());
 
-        Point newPoint = Point(x_i,y_i,z_i);
+        Point newPoint = Point(x_i,y_i,z_i, i);
 
         vertexTab.push_back(newPoint);
     }
@@ -121,7 +126,7 @@ void Mesh::createFromData(std::string path){
         line.erase(0, line.find(delimiter) + delimiter.length());
 
 
-        Face newFace = Face(vertexTab[idPoint1],vertexTab[idPoint2],vertexTab[idPoint3]);
+        Face newFace = Face(idPoint1,idPoint2,idPoint3);
 
         facesTab.append(newFace);
 
@@ -201,11 +206,11 @@ void Mesh::createFromData(std::string path){
 void Mesh::testAdjRandom(){
     int ind = rand()%facesTab.length();
     Face face = facesTab[ind];
-    QVector<Face> faces = face.getAdjFaces();
+    QVector<int> facesInd = face.getAdjFaces();
     std::cout<<"Face n°"<<ind<<std::endl<<std::endl;
 
-    for (int i = 0; i < faces.length();i++){
-        Face faceToCompare = faces[i];
+    for (int i = 0; i < facesInd.length();i++){
+        Face faceToCompare = facesTab[facesInd[i]];
         std::cout<<"Adjacent            : "<<face.verifyAdj(faceToCompare)<<std::endl;
         std::cout<<"Adjacent réciproque : "<<faceToCompare.verifyAdj(face)<<std::endl;
         std::cout<<"Bien dans la liste  : "<<faceToCompare.hasAdjFace(face)<<std::endl;
@@ -215,13 +220,13 @@ void Mesh::testAdjRandom(){
 
 
 void Mesh::addAdjacence(Face& face1, Face& face2){
-    face1.addAdjFaces(face2);
-    face2.addAdjFaces(face1);
+    face1.addAdjFaces(face2.getIndice());
+    face2.addAdjFaces(face1.getIndice());
 }
 
 void Mesh::addAdjacence(int indFace1, int indFace2){
-    facesTab[indFace1].addAdjFaces(facesTab[indFace2]);
-    facesTab[indFace2].addAdjFaces(facesTab[indFace1]);
+    facesTab[indFace1].addAdjFaces(indFace2);
+    facesTab[indFace2].addAdjFaces(indFace1);
 }
 
 
@@ -236,9 +241,9 @@ void Mesh::drawMesh() {
 
         Face face = facesTab[i];
         glBegin(GL_TRIANGLES);
-        glVertexDraw(face.point(1));
-        glVertexDraw(face.point(2));
-        glVertexDraw(face.point(3));
+        glVertexDraw(vertexTab[face.point(1)]);
+        glVertexDraw(vertexTab[face.point(2)]);
+        glVertexDraw(vertexTab[face.point(3)]);
         glEnd();
     }
 
@@ -250,16 +255,16 @@ void Mesh::drawMeshWireFrame() {
     for(int i = 0; i < facesTab.length(); i+=1) {
         Face face = facesTab[i];
         glBegin(GL_LINE_STRIP);
-            glVertexDraw(face.point(1));
-            glVertexDraw(face.point(2));
+            glVertexDraw(vertexTab[face.point(1)]);
+            glVertexDraw(vertexTab[face.point(2)]);
         glEnd();
         glBegin(GL_LINE_STRIP);
-            glVertexDraw(face.point(2));
-            glVertexDraw(face.point(3));
+            glVertexDraw(vertexTab[face.point(2)]);
+            glVertexDraw(vertexTab[face.point(3)]);
         glEnd();
         glBegin(GL_LINE_STRIP);
-            glVertexDraw(face.point(3));
-            glVertexDraw(face.point(1));
+            glVertexDraw(vertexTab[face.point(3)]);
+            glVertexDraw(vertexTab[face.point(1)]);
         glEnd();
     }
 
