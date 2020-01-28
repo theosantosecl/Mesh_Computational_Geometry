@@ -40,46 +40,38 @@ public:
 class Face
 {
 
-    int sommet1;
-    int sommet2;
-    int sommet3;
-
+    int _sommets[3];
     int _indice;
 
     //Indices de faces
-    QVector<int> _adjFaces;
+    int _adjFaces[3];
     //TODO : changer en tableau à la place de QVector
 
 public:
-    Face(): sommet1(), sommet2(), sommet3() {}
-    Face(int point1_, int point2_, int point3_): sommet1(point1_), sommet2(point2_), sommet3(point3_)  {}
-    Face(int point1_, int point2_, int point3_, int indice): sommet1(point1_), sommet2(point2_), sommet3(point3_), _indice(indice){}
+    Face(): _sommets() {}
+    Face(int point1_, int point2_, int point3_): _sommets()  {
+        _sommets[0] = point1_;
+        _sommets[1] = point2_;
+        _sommets[2] = point3_;
+    }
+    Face(int point1_, int point2_, int point3_, int indice): _sommets(), _indice(indice){
+        _sommets[0] = point1_;
+        _sommets[1] = point2_;
+        _sommets[2] = point3_;
+    }
 
     //get
     int point(int i) const {
-        if (i == 1){
-            return sommet1;
-        }
-        if (i == 2){
-            return sommet2;
-        }
-        if (i == 3){
-            return sommet3;
-        }
-        else {
-            return sommet1;
-        }
+        return _sommets[i];
     }
 
-    QVector<int> getAdjFaces() {
+    int * getAdjFaces() {
         return _adjFaces;
     }
-    void setAdjFaces(QVector<int> adjFaces){
-       _adjFaces = adjFaces;
-    }
-
-    void addAdjFaces(int newFace){
-        _adjFaces.append(newFace);
+    void setAdjFaces(int adjFaces[3]){
+        for (int i =0; i < 3; i++){
+            _adjFaces[i] = adjFaces[i];
+        }
     }
 
     int getIndice(){return _indice;}
@@ -87,7 +79,7 @@ public:
 
     bool hasAdjFace(int potentialAdjFace){
         bool rep = false;
-        for (int i = 0; i < _adjFaces.length(); i++){
+        for (int i = 0; i < 3; i++){
             if (_adjFaces[i] == potentialAdjFace){
                 rep = true;
             }
@@ -101,8 +93,8 @@ public:
     }
 
     bool verifyAdj(Face face2){
-        QVector<int> points1 = {sommet1, sommet2, sommet3};
-        QVector<int> points2 = {face2.point(1), face2.point(2), face2.point(3)};
+        QVector<int> points1 = {_sommets[0], _sommets[1], _sommets[2]};
+        QVector<int> points2 = {face2.point(0), face2.point(1), face2.point(2)};
         bool aumoinsun = false;
         bool aumoinsdeux = false;
         int i = 0;
@@ -121,6 +113,42 @@ public:
     }
 
 
+    int getDernierPoint(int ind1, int ind2){
+        int indiceDernierPoint = 0;
+        for (int i = 0; i < 3; i++){
+            if (_sommets[i] != ind1 && _sommets[i] != ind2){
+                indiceDernierPoint = _sommets[i];
+            }
+        }
+        return indiceDernierPoint;
+    }
+
+    // Donne le placement dans le tableau des points du dernier point
+    int getPlaceDernierPoint(int ind1, int ind2){
+        int placeDernierPoint = 0;
+        for (int i = 0; i < 3; i++){
+            if (_sommets[i] != ind1 && _sommets[i] != ind2){
+                placeDernierPoint = i;
+            }
+        }
+        return placeDernierPoint;
+    }
+
+    // Donne le placement dans le tableau du points entré (identifié par l'indice dans vertexTab)
+    int getPlacePoint(int indPoint){
+        int placePoint = -1;
+        for (int i = 0; i < 3; i++){
+            if (_sommets[i] == indPoint){
+                placePoint = i;
+            }
+        }
+        return placePoint;
+    }
+
+    void addAdjFace(int adjFace, int point1, int point2){
+        int place = getPlaceDernierPoint(point1, point2);
+        _adjFaces[place] = adjFace;
+    }
 
 };
 
@@ -132,12 +160,8 @@ class Mesh
     QVector<Point> vertexTab;
     QVector<Face> facesTab;
     Point underlyingPoint;
-//int faces[12]={
-//        0,1,2, // 1
-//        1,3,2, // 2
-//        3,0,2, // 3
-//        0,1,3  // 4
-//    }; // To be replaced by a vector of faces
+
+
 public:
     Mesh();
 
@@ -149,8 +173,8 @@ public:
     Point* getPointPointeur(int indice){ return &(vertexTab[indice]);}
     Point getUnderlyingPoint();
     void createFromData(std::string path);
-    void addAdjacence(int face1, int face2);
-    void addAdjacence(Face& face1, Face& face2);
+    void addAdjacence(int face1, int face2, int point1, int point2);
+    void addAdjacence(Face& face1, Face& face2, int point1, int point2);
     void testAdjRandom();
     int getNbFaces(){ return facesTab.length();}
     int getNbVertices(){ return vertexTab.length();}
