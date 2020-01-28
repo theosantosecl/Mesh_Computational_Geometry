@@ -12,8 +12,6 @@ Mesh::Mesh()
         Face face0 = facesTab[i];
         std::cout<<"Taille    : "<<face0.getAdjFaces().length()<<std::endl;
     }
-    //Face face1 = face0.getAdjFaces()[0];
-    //std::cout<<"Test : "<<face0.verifyAdj(face1)<<std::endl;
 
 
     testAdjRandom();
@@ -22,70 +20,6 @@ Mesh::Mesh()
     testAdjRandom();
 
 
-    /*
-    //Tetraedre
-    vertexTab.push_back(Point(-0.5,-0.5,-0.5)); //0
-    vertexTab.push_back(Point(0.5,-0.5,-0.5)); // 1
-    vertexTab.push_back(Point(0,0.5,-0.5)); // 2
-    vertexTab.push_back(Point(1,1,1)); // 3
-
-    //Pyramide
-    vertexTab.push_back(Point(1,1,1));
-    vertexTab.push_back(Point(1,2,1));
-    vertexTab.push_back(Point(2,1,1));
-    vertexTab.push_back(Point(2,2,1));
-    vertexTab.push_back(Point(1.5,1.5,3));
-
-
-    //Définition du underlyingpoint du tétraedre
-    for (int i = 0; i < 4; i++){
-        Point point = vertexTab[i];
-        point.setNumUnderlyingPoint(0);
-    }
-
-    // Celui de la pyramide
-    for (int i = 4; i < 9; i++){
-        Point point = vertexTab[i];
-        point.setNumUnderlyingPoint(4);
-    }
-
-
-    // faces du tetraedre
-    Face face1 = Face(vertexTab[0],vertexTab[1],vertexTab[2]);
-    Face face2 = Face(vertexTab[1],vertexTab[3],vertexTab[2]);
-    Face face3 = Face(vertexTab[3],vertexTab[0],vertexTab[2]);
-    Face face4 = Face(vertexTab[0],vertexTab[1],vertexTab[3]);
-    facesTab = {face1, face2, face3, face4};
-
-    for (int i = 0; i < facesTab.length(); i++){
-        Face face = facesTab[i];
-        int taille = facesTab.length();
-        QVector<Face> voisins = {facesTab[(i+1) % taille] , facesTab[(i+2) % taille],facesTab[(i+3) % taille]};
-    }
-
-
-    // Faces de la pyramide (triangles)
-    Face face5 = Face(vertexTab[4],vertexTab[5],vertexTab[7]);
-    facesTab.push_back(face5);
-    Face face6 = Face(vertexTab[4],vertexTab[6],vertexTab[7]);
-    facesTab.push_back(face6);
-    Face face7 = Face(vertexTab[4],vertexTab[5],vertexTab[8]);
-    facesTab.push_back(face7);
-    Face face8 = Face(vertexTab[4],vertexTab[6],vertexTab[8]);
-    facesTab.push_back(face8);
-    Face face9 = Face(vertexTab[6],vertexTab[7],vertexTab[8]);
-    facesTab.push_back(face9);
-    Face face10 = Face(vertexTab[5],vertexTab[7],vertexTab[8]);
-    facesTab.push_back(face10);
-
-    // Définiton des faces adjacentes
-    face5.setAdjFaces({face6,face7,face10});
-    face6.setAdjFaces({face5,face8,face9});
-    face7.setAdjFaces({face5,face8,face10});
-    face8.setAdjFaces({face6,face7,face9});
-    face9.setAdjFaces({face6,face8,face10});
-    face10.setAdjFaces({face5,face7,face9});
-*/
 
 
 }
@@ -120,19 +54,13 @@ void Mesh::createFromData(std::string path){
     int nbVertices;
     int nbFaces;
 
-    std::cout<<line<<std::endl;
     std::string substring = line.substr(0,line.find(delimiter));
     nbVertices =  std::atoi(substring.c_str());
     line.erase(0, line.find(delimiter) + delimiter.length());
 
-    std::cout<<line<<std::endl;
     substring = line.substr(0,line.find(delimiter));
     nbFaces =  std::atoi(substring.c_str());
     line.erase(0, line.find(delimiter) + delimiter.length());
-
-    std::cout<<line<<std::endl;
-
-
 
 
     //Les points
@@ -159,9 +87,6 @@ void Mesh::createFromData(std::string path){
 
         Point newPoint = Point(x_i,y_i,z_i);
 
-        if (i % 1000 == 0){
-            std::cout<<x_i<<" "<<y_i<<" "<<z_i<<std::endl;
-        }
         vertexTab.push_back(newPoint);
     }
 
@@ -179,11 +104,6 @@ void Mesh::createFromData(std::string path){
 
     for (int i = 0; i < nbFaces; i++){
         getline(thefile,line);
-
-        if (i % 1000 == 0 || i < 10){
-            std::cout<<"Face n°"<<i<<std::endl;
-            std::cout<<line<<std::endl;
-        }
 
         //TODO : S'adapter au nombre de sommets
         line.erase(0, line.find(delimiter) + delimiter.length());
@@ -213,16 +133,12 @@ void Mesh::createFromData(std::string path){
         } else {
           if (edgemap.find(std::make_pair(idPoint1,idPoint2)) != edgemap.end()){
               int autreFace = edgemap[std::make_pair(idPoint1,idPoint2)];
-              //(*autreFace).addAdjFaces(newFace);
-              //newFace.addAdjFaces(*autreFace);
               addAdjacence(autreFace,i);
               edgemap.erase(std::make_pair(idPoint1,idPoint2));
               edgemap.erase(std::make_pair(idPoint2,idPoint1));
           }
           else{
               int autreFace = edgemap[std::make_pair(idPoint2,idPoint1)];
-              //(*autreFace).addAdjFaces(newFace);
-              //newFace.addAdjFaces(*autreFace);
               addAdjacence(autreFace,i);
               edgemap.erase(std::make_pair(idPoint2,idPoint1));
               edgemap.erase(std::make_pair(idPoint1,idPoint2));
@@ -233,25 +149,18 @@ void Mesh::createFromData(std::string path){
 
         if ((edgemap.find(std::make_pair(idPoint1,idPoint3)) == edgemap.end()) &&
                 (edgemap.find(std::make_pair(idPoint3,idPoint1)) == edgemap.end())){
-            //edgemap.insert(std::make_pair(std::make_pair(idPoint1,idPoint2),newFace));
             edgemap[std::make_pair(idPoint1,idPoint3)] = i;
             edgemap[std::make_pair(idPoint3,idPoint1)] = i;
 
         } else {
           if (edgemap.find(std::make_pair(idPoint1,idPoint3)) != edgemap.end()){
-              //Face autreFace = edgemap.find(std::make_pair(idPoint1,idPoint2))->second;
               int autreFace = edgemap[std::make_pair(idPoint1,idPoint3)];
-              //(*autreFace).addAdjFaces(newFace);
-              //newFace.addAdjFaces(*autreFace);
               addAdjacence(autreFace,i);
               edgemap.erase(std::make_pair(idPoint1,idPoint3));
               edgemap.erase(std::make_pair(idPoint3,idPoint1));
           }
           else{
-              //Face autreFace = edgemap.find(std::make_pair(idPoint1,idPoint2))->second;
               int autreFace = edgemap[std::make_pair(idPoint3,idPoint1)];
-              //(*autreFace).addAdjFaces(newFace);
-              //newFace.addAdjFaces(*autreFace);
               addAdjacence(autreFace,i);
               edgemap.erase(std::make_pair(idPoint3,idPoint1));
               edgemap.erase(std::make_pair(idPoint1,idPoint3));
@@ -262,24 +171,17 @@ void Mesh::createFromData(std::string path){
 
         if ((edgemap.find(std::make_pair(idPoint3,idPoint2)) == edgemap.end()) &&
                 (edgemap.find(std::make_pair(idPoint2,idPoint3)) == edgemap.end())){
-            //edgemap.insert(std::make_pair(std::make_pair(idPoint1,idPoint2),newFace));
             edgemap[std::make_pair(idPoint3,idPoint2)] = i;
             edgemap[std::make_pair(idPoint2,idPoint3)] = i;
         } else {
           if (edgemap.find(std::make_pair(idPoint3,idPoint2)) != edgemap.end()){
-              //Face autreFace = edgemap.find(std::make_pair(idPoint1,idPoint2))->second;
               int autreFace = edgemap[std::make_pair(idPoint3,idPoint2)];
-              //(*autreFace).addAdjFaces(newFace);
-              //newFace.addAdjFaces(*autreFace);
               addAdjacence(autreFace,i);
               edgemap.erase(std::make_pair(idPoint3,idPoint2));
               edgemap.erase(std::make_pair(idPoint2,idPoint3));
           }
           else{
-              //Face autreFace = edgemap.find(std::make_pair(idPoint1,idPoint2))->second;
               int autreFace = edgemap[std::make_pair(idPoint2,idPoint3)];
-              //(*autreFace).addAdjFaces(newFace);
-              //newFace.addAdjFaces(*autreFace);
               addAdjacence(autreFace,i);
               edgemap.erase(std::make_pair(idPoint2,idPoint3));
               edgemap.erase(std::make_pair(idPoint3,idPoint2));
@@ -290,32 +192,8 @@ void Mesh::createFromData(std::string path){
 
 
 
-        if (i % 1000 == 0){
-            std::cout<<"Taille :"<<facesTab.length()<<std::endl;
-        }
-
-        if (i >= 96700){
-            std::cout<<"Taille :"<<facesTab.length()<<std::endl;
-            Face facetest = facesTab[0];
-        }
-
     }
 
-
-/*
-    for (int i = 0; i < nbFaces; i++){
-        Face face = facesTab[i];
-        for (int j=0; j<face.getAdjFaces().length();j++){
-            Face adjFace = face.getAdjFaces()[j];
-            if (! adjFace.hasAdjFace(face)){
-                std::cout<<"Ca va pas pour "<<i<<", taille = "<<face.getAdjFaces().length()<<", "<<adjFace.getAdjFaces().length()<<std::endl;
-                adjFace.addAdjFaces(face);
-                std::cout<<"Après ajout : "<<adjFace.getAdjFaces().length()<<std::endl;
-            }
-        }
-    }*/
-std::cout<<"Taille d'un d'eux : "<<facesTab[24].getAdjFaces().length()<<std::endl;
-std::cout<<"Taille finale :"<<facesTab.length()<<std::endl;
 }
 
 

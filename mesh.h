@@ -5,7 +5,6 @@
 #include <iostream>
 #include <fstream>
 
-// TO MODIFY
 // Advice => You should create a new file for each module but not necessarily for each class
 class Point
 {
@@ -13,80 +12,99 @@ class Point
     double _y;
     double _z;
     int _numFace;
-    int _numUnderlyingPoint;
-
+    int _indice;
 
 public:
-    Point():_x(),_y(),_z(), _numUnderlyingPoint() {}
-    Point(float x_, float y_, float z_):_x(x_),_y(y_),_z(z_), _numUnderlyingPoint() {}
+    Point():_x(),_y(),_z() {}
+    Point(float x_, float y_, float z_):_x(x_),_y(y_),_z(z_) {}
+
+    Point(float x_, float y_, float z_, int indice):_x(x_),_y(y_),_z(z_), _indice(indice) {}
+
     // get
     double x() const { return _x; }
     double y() const { return _y; }
     double z() const { return _z; }
 
 
+    int getIndice(){return _indice;}
+    void setIndice(int indice){_indice = indice;}
     int getNumFace() {return _numFace;}
     void setNumFace(int numFace){_numFace = numFace;}
-    int getNumUnderlyingPoint() {return _numUnderlyingPoint;}
-    void setNumUnderlyingPoint(int numUnderlyingPoint) {_numUnderlyingPoint = numUnderlyingPoint;}
 };
 
 class Face
 {
-    Point _point1;
-    Point _point2;
-    Point _point3;
-    QVector<Face> _adjFaces;
+
+    int sommet1;
+    int sommet2;
+    int sommet3;
+
+    int _indice;
+
+    //Indices de faces
+    QVector<int> _adjFaces;
+    //TODO : changer en tableau à la place de QVector
+
 public:
-    Face(): _point1(), _point2(), _point3() {}
-    Face(Point point1_, Point point2_, Point point3_): _point1(point1_), _point2(point2_), _point3(point3_) {}
+    Face(): sommet1(), sommet2(), sommet3() {}
+    Face(int point1_, int point2_, int point3_): sommet1(point1_), sommet2(point2_), sommet3(point3_)  {}
+    Face(int point1_, int point2_, int point3_, int indice): sommet1(point1_), sommet2(point2_), sommet3(point3_), _indice(indice){}
+
     //get
-    Point point(int i) const {
+    int point(int i) const {
         if (i == 1){
-            return _point1;
+            return sommet1;
         }
         if (i == 2){
-            return _point2;
+            return sommet2;
         }
         if (i == 3){
-            return _point3;
+            return sommet3;
         }
         else {
-            return _point1;
+            return sommet1;
         }
     }
 
-    QVector<Face> getAdjFaces() {
+    QVector<int> getAdjFaces() {
         return _adjFaces;
     }
-    void setAdjFaces(QVector<Face> adjFaces){
+    void setAdjFaces(QVector<int> adjFaces){
        _adjFaces = adjFaces;
     }
 
-    void addAdjFaces(Face& newFace){
+    void addAdjFaces(int newFace){
         _adjFaces.append(newFace);
     }
 
-    bool hasAdjFace(Face potentialAdjFace){
+    int getIndice(){return _indice;}
+    void setIndice(int indice){_indice = indice;}
+
+    bool hasAdjFace(int potentialAdjFace){
         bool rep = false;
         for (int i = 0; i < _adjFaces.length(); i++){
-            if (&_adjFaces[i] == &potentialAdjFace){
+            if (_adjFaces[i] == potentialAdjFace){
                 rep = true;
             }
         }
         return rep;
     }
 
+
+    bool hasAdjFace(Face potentialAdjFace){
+        return hasAdjFace(potentialAdjFace.getIndice());
+    }
+
     bool verifyAdj(Face face2){
-        QVector<Point> points1 = {_point1, _point2, _point3};
-        QVector<Point> points2 = {face2.point(1), face2.point(2), face2.point(3)};
+        QVector<int> points1 = {sommet1, sommet2, sommet3};
+        QVector<int> points2 = {face2.point(1), face2.point(2), face2.point(3)};
         bool aumoinsun = false;
         bool aumoinsdeux = false;
         int i = 0;
         while ( !aumoinsdeux && i<3){
             int j = 0;
             while (!aumoinsdeux && j<3){
-                if (&(points1[i]) == &(points2[j])){
+                if (points1[i] == points2[j]){
                     if (aumoinsun) aumoinsdeux = true;
                     else aumoinsun = true;
                 }
@@ -112,7 +130,7 @@ class Mesh
 //    }; // To be replaced by a vector of faces
 public:
     Mesh();
-    
+
     void drawMesh();
     void drawMeshWireFrame();
     Face getFace(Point point);
@@ -121,7 +139,6 @@ public:
     void addAdjacence(int face1, int face2);
     void addAdjacence(Face& face1, Face& face2);
     void testAdjRandom();
-
 
 };
 
