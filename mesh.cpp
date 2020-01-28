@@ -125,6 +125,9 @@ void Mesh::createFromData(std::string path){
 
 
         Face newFace = Face(idPoint1,idPoint2,idPoint3,i);
+        if (vertexTab[idPoint1].getNumFace() < 0){vertexTab[idPoint1].setNumFace(i);}
+        if (vertexTab[idPoint2].getNumFace() < 0){vertexTab[idPoint2].setNumFace(i);}
+        if (vertexTab[idPoint3].getNumFace() < 0){vertexTab[idPoint3].setNumFace(i);}
 
         facesTab.append(newFace);
 

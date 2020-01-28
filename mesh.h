@@ -20,10 +20,10 @@ class Point
     int _indice;
 
 public:
-    Point():_x(),_y(),_z() {}
-    Point(float x_, float y_, float z_):_x(x_),_y(y_),_z(z_) {}
+    Point():_x(),_y(),_z(), _numFace(-1) {}
+    Point(float x_, float y_, float z_):_x(x_),_y(y_),_z(z_),_numFace(-1) {}
 
-    Point(float x_, float y_, float z_, int indice):_x(x_),_y(y_),_z(z_), _indice(indice) {}
+    Point(float x_, float y_, float z_, int indice):_x(x_),_y(y_),_z(z_), _numFace(-1), _indice(indice) {}
 
     // get
     double x() const { return _x; }
