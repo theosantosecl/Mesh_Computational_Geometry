@@ -8,7 +8,7 @@ Mesh::Mesh()
 
     std::cout<<"Taille vertex : "<<vertexTab.length()<<std::endl;
     std::cout<<"Taille faces : "<<facesTab.length()<<std::endl;
-    for (int i = 0; i < 100; i++){
+    for (int i = 96700; i < 96713; i++){
         Face face0 = facesTab[i];
         std::cout<<"Taille    : "<<face0.getAdjFaces().length()<<std::endl;
     }
@@ -175,7 +175,7 @@ void Mesh::createFromData(std::string path){
     int idPoint2;
     int idPoint3;
 
-    std::map <std::pair<int,int>, Face*> edgemap;
+    std::map <std::pair<int,int>, int> edgemap;
 
     for (int i = 0; i < nbFaces; i++){
         getline(thefile,line);
@@ -201,47 +201,29 @@ void Mesh::createFromData(std::string path){
         line.erase(0, line.find(delimiter) + delimiter.length());
 
 
-        if (i < 10 || i > 96700){
-            std::cout<<"3 points : "<<idPoint1<<" "<<idPoint2<<" "<<idPoint3<<std::endl;
-        }
         Face newFace = Face(vertexTab[idPoint1],vertexTab[idPoint2],vertexTab[idPoint3]);
-        //Face* autreFace;
 
-        if (i % 1000 == 0 && i > 1){
-            Face facetest = facesTab[0];
-            std::cout<<"Taille :"<<facesTab.length()<<std::endl;
-        }
-
-
-
-        if (i % 1000 == 0){
-            std::cout<<"Taille :"<<facesTab.length()<<std::endl;
-        }
-
+        facesTab.append(newFace);
 
 
         if ((edgemap.find(std::make_pair(idPoint1,idPoint2)) == edgemap.end()) &&
                 (edgemap.find(std::make_pair(idPoint2,idPoint1)) == edgemap.end())){
-            //edgemap.insert((std::make_pair(idPoint1,idPoint2),newFace));
-            edgemap[std::make_pair(idPoint1,idPoint2)] = &newFace;
-            edgemap[std::make_pair(idPoint2,idPoint1)] = &newFace;
-            if (i < 10){
-                std::cout<<"Test trouver : "<<(edgemap.find(std::make_pair(idPoint1,idPoint2)) == edgemap.end())<<std::endl;
-            }
+            edgemap[std::make_pair(idPoint1,idPoint2)] = i;
+            edgemap[std::make_pair(idPoint2,idPoint1)] = i;
         } else {
           if (edgemap.find(std::make_pair(idPoint1,idPoint2)) != edgemap.end()){
-              //Face* autreFace = edgemap.find(std::make_pair(idPoint1,idPoint2))->second;
-              Face* autreFace = edgemap[std::make_pair(idPoint1,idPoint2)];
-              (*autreFace).addAdjFaces(newFace);
-              newFace.addAdjFaces(*autreFace);
+              int autreFace = edgemap[std::make_pair(idPoint1,idPoint2)];
+              //(*autreFace).addAdjFaces(newFace);
+              //newFace.addAdjFaces(*autreFace);
+              addAdjacence(autreFace,i);
               edgemap.erase(std::make_pair(idPoint1,idPoint2));
               edgemap.erase(std::make_pair(idPoint2,idPoint1));
           }
           else{
-              //Face autreFace = edgemap.find(std::make_pair(idPoint1,idPoint2))->second;
-              Face* autreFace = edgemap[std::make_pair(idPoint2,idPoint1)];
-              (*autreFace).addAdjFaces(newFace);
-              newFace.addAdjFaces(*autreFace);
+              int autreFace = edgemap[std::make_pair(idPoint2,idPoint1)];
+              //(*autreFace).addAdjFaces(newFace);
+              //newFace.addAdjFaces(*autreFace);
+              addAdjacence(autreFace,i);
               edgemap.erase(std::make_pair(idPoint2,idPoint1));
               edgemap.erase(std::make_pair(idPoint1,idPoint2));
           }
@@ -252,23 +234,25 @@ void Mesh::createFromData(std::string path){
         if ((edgemap.find(std::make_pair(idPoint1,idPoint3)) == edgemap.end()) &&
                 (edgemap.find(std::make_pair(idPoint3,idPoint1)) == edgemap.end())){
             //edgemap.insert(std::make_pair(std::make_pair(idPoint1,idPoint2),newFace));
-            edgemap[std::make_pair(idPoint1,idPoint3)] = &newFace;
-            edgemap[std::make_pair(idPoint3,idPoint1)] = &newFace;
+            edgemap[std::make_pair(idPoint1,idPoint3)] = i;
+            edgemap[std::make_pair(idPoint3,idPoint1)] = i;
 
         } else {
           if (edgemap.find(std::make_pair(idPoint1,idPoint3)) != edgemap.end()){
               //Face autreFace = edgemap.find(std::make_pair(idPoint1,idPoint2))->second;
-              Face* autreFace = edgemap[std::make_pair(idPoint1,idPoint3)];
-              (*autreFace).addAdjFaces(newFace);
-              newFace.addAdjFaces(*autreFace);
+              int autreFace = edgemap[std::make_pair(idPoint1,idPoint3)];
+              //(*autreFace).addAdjFaces(newFace);
+              //newFace.addAdjFaces(*autreFace);
+              addAdjacence(autreFace,i);
               edgemap.erase(std::make_pair(idPoint1,idPoint3));
               edgemap.erase(std::make_pair(idPoint3,idPoint1));
           }
           else{
               //Face autreFace = edgemap.find(std::make_pair(idPoint1,idPoint2))->second;
-              Face* autreFace = edgemap[std::make_pair(idPoint3,idPoint1)];
-              (*autreFace).addAdjFaces(newFace);
-              newFace.addAdjFaces(*autreFace);
+              int autreFace = edgemap[std::make_pair(idPoint3,idPoint1)];
+              //(*autreFace).addAdjFaces(newFace);
+              //newFace.addAdjFaces(*autreFace);
+              addAdjacence(autreFace,i);
               edgemap.erase(std::make_pair(idPoint3,idPoint1));
               edgemap.erase(std::make_pair(idPoint1,idPoint3));
           }
@@ -279,29 +263,31 @@ void Mesh::createFromData(std::string path){
         if ((edgemap.find(std::make_pair(idPoint3,idPoint2)) == edgemap.end()) &&
                 (edgemap.find(std::make_pair(idPoint2,idPoint3)) == edgemap.end())){
             //edgemap.insert(std::make_pair(std::make_pair(idPoint1,idPoint2),newFace));
-            edgemap[std::make_pair(idPoint3,idPoint2)] = &newFace;
-            edgemap[std::make_pair(idPoint2,idPoint3)] = &newFace;
+            edgemap[std::make_pair(idPoint3,idPoint2)] = i;
+            edgemap[std::make_pair(idPoint2,idPoint3)] = i;
         } else {
           if (edgemap.find(std::make_pair(idPoint3,idPoint2)) != edgemap.end()){
               //Face autreFace = edgemap.find(std::make_pair(idPoint1,idPoint2))->second;
-              Face* autreFace = edgemap[std::make_pair(idPoint3,idPoint2)];
-              (*autreFace).addAdjFaces(newFace);
-              newFace.addAdjFaces(*autreFace);
+              int autreFace = edgemap[std::make_pair(idPoint3,idPoint2)];
+              //(*autreFace).addAdjFaces(newFace);
+              //newFace.addAdjFaces(*autreFace);
+              addAdjacence(autreFace,i);
               edgemap.erase(std::make_pair(idPoint3,idPoint2));
               edgemap.erase(std::make_pair(idPoint2,idPoint3));
           }
           else{
               //Face autreFace = edgemap.find(std::make_pair(idPoint1,idPoint2))->second;
-              Face* autreFace = edgemap[std::make_pair(idPoint2,idPoint3)];
-              (*autreFace).addAdjFaces(newFace);
-              newFace.addAdjFaces(*autreFace);
+              int autreFace = edgemap[std::make_pair(idPoint2,idPoint3)];
+              //(*autreFace).addAdjFaces(newFace);
+              //newFace.addAdjFaces(*autreFace);
+              addAdjacence(autreFace,i);
               edgemap.erase(std::make_pair(idPoint2,idPoint3));
               edgemap.erase(std::make_pair(idPoint3,idPoint2));
           }
         }
 
 
-        facesTab.append(newFace);
+
 
 
         if (i % 1000 == 0){
@@ -353,6 +339,11 @@ void Mesh::testAdjRandom(){
 void Mesh::addAdjacence(Face& face1, Face& face2){
     face1.addAdjFaces(face2);
     face2.addAdjFaces(face1);
+}
+
+void Mesh::addAdjacence(int indFace1, int indFace2){
+    facesTab[indFace1].addAdjFaces(facesTab[indFace2]);
+    facesTab[indFace2].addAdjFaces(facesTab[indFace1]);
 }
 
 
