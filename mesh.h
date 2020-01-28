@@ -10,6 +10,7 @@
 //Iterateurs
 class Iterator_on_faces;
 class Iterator_on_vertices;
+class Circulator_on_faces;
 
 class Point
 {
@@ -183,6 +184,8 @@ public:
     Iterator_on_faces endFaces();
     Iterator_on_vertices beginVertices();
     Iterator_on_vertices endVertices();
+    Circulator_on_faces beginCircFaces(int point);
+    Circulator_on_faces endCircFaces(int point);
 
 
 
@@ -260,6 +263,39 @@ public:
     int getIndice(){
         return _indice;
     }
+
+};
+
+
+class Circulator_on_faces{
+    int _indFace;
+    int _indPointCentral;
+    Mesh* _mesh;
+
+public:
+
+    Circulator_on_faces(Mesh* mesh, int indPoint):  _indPointCentral(indPoint), _mesh(mesh){
+        _indFace = (_mesh->getPointPointeur(_indPointCentral))->getNumFace();
+    }
+
+    void operator++(){
+        Face* currentFace = _mesh->getFacePointeur(_indFace);
+        int sommetSuivantPlace = ((currentFace->getPlacePoint(_indPointCentral))+1)%3;
+        int faceOpposee = currentFace->getAdjFaces()[sommetSuivantPlace];
+        _indFace = faceOpposee;
+    }
+
+
+
+    bool operator==(Circulator_on_faces circ2){
+        return (_indFace == circ2.getIndFace() && _indPointCentral == circ2.getIndPointCentral());
+    }
+
+    int getIndFace(){return _indFace;}
+    void setIndFace(int indFace){_indFace = indFace;}
+    int getIndPointCentral(){return _indPointCentral;}
+    void setIndPointCentral(int indPointCentral){_indPointCentral = indPointCentral;}
+
 
 };
 
