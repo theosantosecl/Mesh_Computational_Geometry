@@ -286,6 +286,14 @@ public:
     }
 
 
+    Face& operator*(){
+        return *(_mesh->getFacePointeur(_indFace));
+    }
+
+    Face* operator->(){
+        return _mesh->getFacePointeur(_indFace);
+    }
+
 
     bool operator==(Circulator_on_faces circ2){
         return (_indFace == circ2.getIndFace() && _indPointCentral == circ2.getIndPointCentral());
@@ -298,5 +306,9 @@ public:
 
 
 };
+
+
+
+
 
 #endif // MESH_H
