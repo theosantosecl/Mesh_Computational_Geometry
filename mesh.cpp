@@ -269,6 +269,20 @@ Circulator_on_faces Mesh::endCircFaces(int point){
     return circ;
 }
 
+Circulator_on_vertices Mesh::beginCircVertices(int point){
+    Circulator_on_vertices circ(this, point);
+    return circ;
+}
+
+Circulator_on_vertices Mesh::endCircVertices(int point){
+    Circulator_on_vertices circ(this, point);
+    Face* firstFace = this->getFacePointeur(circ.getCircFace().getIndFace());
+    int sommetPrecedentPlace = ((firstFace->getPlacePoint(circ.getIndPointCentral()))+1)%3;
+    circ.setPoint(firstFace->point(sommetPrecedentPlace));
+    return circ;
+}
+
+
 
 //Example with a tetraedra
 void Mesh::drawMesh() {

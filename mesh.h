@@ -11,6 +11,7 @@
 class Iterator_on_faces;
 class Iterator_on_vertices;
 class Circulator_on_faces;
+class Circulator_on_vertices;
 
 class Point
 {
@@ -186,7 +187,8 @@ public:
     Iterator_on_vertices endVertices();
     Circulator_on_faces beginCircFaces(int point);
     Circulator_on_faces endCircFaces(int point);
-
+    Circulator_on_vertices beginCircVertices(int point);
+    Circulator_on_vertices endCircVertices(int point);
 
 
 };
@@ -308,7 +310,49 @@ public:
 };
 
 
+class Circulator_on_vertices{
+    Circulator_on_faces circFace;
+    int _indPointCentral;
+    int _indPoint;
+    Mesh* _mesh;
 
+public:
+    Circulator_on_vertices(Mesh* mesh, int indPointCentral): circFace(mesh, indPointCentral),  _indPointCentral(indPointCentral), _mesh(mesh){
+        _indPoint = circFace->point( (circFace->getPlacePoint(_indPointCentral)+2)%3 );
+    }
+
+    void operator++(){
+        ++circFace;
+        _indPoint = circFace->point( (circFace->getPlacePoint(_indPointCentral)+2)%3 );
+    }
+
+
+    Point& operator*(){
+        return *(_mesh->getPointPointeur(_indPoint));
+    }
+
+    Point* operator->(){
+        return _mesh->getPointPointeur(_indPoint);
+    }
+
+
+
+    bool operator==(Circulator_on_vertices circ2){
+        return (_indPoint == circ2.getPoint());
+                //&& circFace == circ2.getCircFace()); Attention, s'il faut prendre en compte ça, ça change la méthode end dans lequel il faut modifier également circFace
+    }
+
+
+    int getPoint(){return _indPoint;}
+    void setPoint(int point){_indPoint = point;}
+    int getIndPointCentral(){return _indPointCentral;}
+
+    Circulator_on_faces getCircFace(){
+        return circFace;
+    }
+
+
+};
 
 
 #endif // MESH_H
