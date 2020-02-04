@@ -4,7 +4,7 @@ Mesh::Mesh()
 {
 
 
-    createFromData("E:\\Centrale\\Pougne\\4A\\MSO - MOS\\C++ etc\\queen.off");
+    createFromData("/home/vault/Code/m2_ds/Mesh_Computational_Geometry/queen.off");
 
     std::cout<<"Taille vertex : "<<vertexTab.length()<<std::endl;
     std::cout<<"Taille faces : "<<facesTab.length()<<std::endl;

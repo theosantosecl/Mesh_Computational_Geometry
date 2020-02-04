@@ -24,8 +24,8 @@ HEADERS  += mainwindow.h \
 FORMS    += mainwindow.ui
 
 #---- Comment the following line on MacOS
-#LIBS = -lGLU
+LIBS = -lGLU
 
-LIBS += -lglu32
-LIBS += -lOpengl32
+# LIBS += -lglu32
+# LIBS += -lOpengl32
 
