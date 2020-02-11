@@ -46,7 +46,7 @@ void GLDisplayWidget::paintGL(){
     glColor3f(0, 1 ,0);
 
     // example with a tetraedre
-    _mesh.drawMeshWireFrame();
+    _mesh.drawMesh();
 }
 
 void GLDisplayWidget::resizeGL(int width, int height){

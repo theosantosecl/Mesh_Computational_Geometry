@@ -8,23 +8,6 @@ Mesh::Mesh()
 
     std::cout<<"Taille vertex : "<<vertexTab.length()<<std::endl;
     std::cout<<"Taille faces : "<<facesTab.length()<<std::endl;
-
-
-
-
-    testAdjRandom();
-    testAdjRandom();
-    testAdjRandom();
-    testAdjRandom();
-
-
-    /*for (Iterator_on_vertices it = this->beginVertices(); !(it == this->endVertices()); ++it){
-        std::cout<<it.getIndice()<<" "<<(*it).getIndice()<<std::endl;
-    }
-    */
-
-
-
 }
 
 
@@ -295,9 +278,9 @@ void Mesh::drawMesh() {
 
         Face face = facesTab[i];
         glBegin(GL_TRIANGLES);
-        glVertexDraw(vertexTab[face.point(0)]);
-        glVertexDraw(vertexTab[face.point(1)]);
-        glVertexDraw(vertexTab[face.point(2)]);
+            glVertexDraw(vertexTab[face.point(0)]);
+            glVertexDraw(vertexTab[face.point(1)]);
+            glVertexDraw(vertexTab[face.point(2)]);
         glEnd();
     }
 
