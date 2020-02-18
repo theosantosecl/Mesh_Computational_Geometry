@@ -180,6 +180,7 @@ public:
     void testAdjRandom();
     int getNbFaces(){ return facesTab.length();}
     int getNbVertices(){ return vertexTab.length();}
+    float getLocalCurvature(int point);
 
     Iterator_on_faces beginFaces();
     Iterator_on_faces endFaces();
