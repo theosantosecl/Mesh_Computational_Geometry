@@ -66,6 +66,10 @@ public:
     int point(int i) const {
         return _sommets[i];
     }
+    //set
+    void setPoint(int i, int indice){
+        _sommets[i] = indice;
+    }
 
     int * getAdjFaces() {
         return _adjFaces;
@@ -152,6 +156,10 @@ public:
         _adjFaces[place] = adjFace;
     }
 
+
+    void splitFace(int indNewPoint);
+
+
 };
 
 
@@ -189,6 +197,13 @@ public:
     Circulator_on_faces endCircFaces(int point);
     Circulator_on_vertices beginCircVertices(int point);
     Circulator_on_vertices endCircVertices(int point);
+
+    void splitFace(int indFace, Point _point);
+
+    void splitFace(int indFace, double x, double y, double z){
+        Point _point = Point(x,y,z);
+        splitFace(indFace, _point);
+    }
 
 
 };
@@ -350,6 +365,9 @@ public:
     Circulator_on_faces getCircFace(){
         return circFace;
     }
+
+
+
 
 
 };

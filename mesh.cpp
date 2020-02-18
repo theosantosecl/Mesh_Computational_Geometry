@@ -4,7 +4,7 @@ Mesh::Mesh()
 {
 
 
-    createFromData("E:\\Centrale\\Pougne\\4A\\MSO - MOS\\C++ etc\\queen.off");
+    createFromData("E:\\Centrale\\Pougne\\4A\\MSO - MOS\\C++ etc\\cube.off");
 
     std::cout<<"Taille vertex : "<<vertexTab.length()<<std::endl;
     std::cout<<"Taille faces : "<<facesTab.length()<<std::endl;
@@ -16,6 +16,8 @@ Mesh::Mesh()
     testAdjRandom();
     testAdjRandom();
     testAdjRandom();
+
+    splitFace(0, -0.5, -0.5, -1);
 
 
     /*for (Iterator_on_vertices it = this->beginVertices(); !(it == this->endVertices()); ++it){
@@ -36,6 +38,10 @@ void glVertexDraw(const Point & p) {
 }
 
 
+
+
+
+
 // Get the face of a point
 Face Mesh::getFace(Point point){
     int numFace = point.getNumFace();
@@ -50,6 +56,7 @@ void Mesh::createFromData(std::string path){
     thefile.open(path.c_str());
     getline(thefile,line);
     std::string delimiter = " ";
+    std::cout<<line<<std::endl;
 
 
 
@@ -65,6 +72,7 @@ void Mesh::createFromData(std::string path){
     nbFaces =  std::atoi(substring.c_str());
     line.erase(0, line.find(delimiter) + delimiter.length());
 
+    std::cout<<nbVertices<<" "<<nbFaces<<std::endl;
 
     //Les points
     float x_i;
@@ -91,6 +99,7 @@ void Mesh::createFromData(std::string path){
         Point newPoint = Point(x_i,y_i,z_i, i);
 
         vertexTab.push_back(newPoint);
+        std::cout<<line<<std::endl;
     }
 
 
@@ -281,6 +290,66 @@ Circulator_on_vertices Mesh::endCircVertices(int point){
     circ.setPoint(firstFace->point(sommetPrecedentPlace));
     return circ;
 }
+
+
+
+void Mesh::splitFace(int indFace, Point _point){
+    _point.setIndice(vertexTab.length());
+    vertexTab.push_back(_point);
+
+    int indNewPoint = vertexTab.length();
+
+    //Initialisation des variables qui vont changer
+
+    Face* _face0 = &facesTab[indFace];
+    int sommet0 = _face0->point(0);
+    int face1 = _face0->getAdjFaces()[1];
+    int face2 = _face0->getAdjFaces()[2];
+
+
+    //Création des deux nouvelles faces
+    int indFacet = facesTab.length();
+    int indFacet2 = facesTab.length()+1;
+    Face newFacet = Face(indNewPoint,_face0->point(2),sommet0, indFacet);
+    Face newFacet2 = Face(indNewPoint,sommet0,_face0->point(1),indFacet2);
+
+
+    //Définition des adjacences des nouvelles faces
+    _face0->getAdjFaces()[1] = indFacet;
+    newFacet.getAdjFaces()[0] = face1;
+    newFacet.getAdjFaces()[1] = indFacet2;
+    newFacet.getAdjFaces()[2] = indFace;
+
+
+    _face0->getAdjFaces()[2] = indFacet2;
+    newFacet.getAdjFaces()[0] = face2;
+    newFacet.getAdjFaces()[1] = indFace;
+    newFacet.getAdjFaces()[2] = indFacet;
+
+    //Ajout des nouvelles faces
+    facesTab.push_back(newFacet);
+    facesTab.push_back(newFacet2);
+
+
+   //Redéfinition des adjacences + changement de sommet pour if0
+    _face0->setPoint(0,indNewPoint);
+
+    // de if0
+   _face0->getAdjFaces()[1] = indFacet;
+   _face0->getAdjFaces()[2] = indFacet2;
+
+    // de if1
+   facesTab[face1].getAdjFaces()[(facesTab[face1].getPlacePoint(sommet0)-1)%3] = indFacet;
+
+    // de if2
+   facesTab[face2].getAdjFaces()[(facesTab[face2].getPlacePoint(sommet0)+1)%3] = indFacet2;
+
+
+   //Redéfinition des faces des points
+   vertexTab[sommet0].setNumFace(indFacet2);
+   vertexTab[indNewPoint].setNumFace(indFace);
+}
+
 
 
 
