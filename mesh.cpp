@@ -12,11 +12,6 @@ Mesh::Mesh()
 
 
 
-    testAdjRandom();
-    testAdjRandom();
-    testAdjRandom();
-    testAdjRandom();
-
     splitFace(0, -0.5, -0.5, -1);
 
 
@@ -345,7 +340,7 @@ void Mesh::splitFace(int indFace, Point _point){
     _point.setIndice(vertexTab.length());
     vertexTab.push_back(_point);
 
-    int indNewPoint = vertexTab.length();
+    int indNewPoint = vertexTab.length()-1;
 
     //Initialisation des variables qui vont changer
 
@@ -395,7 +390,10 @@ void Mesh::splitFace(int indFace, Point _point){
 
    //Redéfinition des faces des points
    vertexTab[sommet0].setNumFace(indFacet2);
+   std::cout<<"HEY"<<std::endl;
    vertexTab[indNewPoint].setNumFace(indFace);
+   std::cout<<"YEH"<<std::endl;
+
 }
 
 

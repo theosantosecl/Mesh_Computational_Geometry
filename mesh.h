@@ -203,7 +203,9 @@ public:
 
     void splitFace(int indFace, double x, double y, double z){
         Point _point = Point(x,y,z);
+        std::cout<<"dans le splitFace"<<std::endl;
         splitFace(indFace, _point);
+        std::cout<<"fini splitFace"<<std::endl;
     }
 
 
