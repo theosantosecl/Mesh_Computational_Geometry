@@ -297,7 +297,7 @@ double cotan(float u[3], float v[3]){
     return pScal(u, v)/pVecNorm(u, v);
 }
 
-void Mesh::getLocalCurvature(int point){
+float Mesh::getLocalCurvature(int point){
     float lx = 0;
     float ly = 0;
     float lz = 0;
@@ -328,6 +328,8 @@ void Mesh::getLocalCurvature(int point){
         ly += (pj->y() - pi->y())*cotan(v10, v11)*cotan(v20, v21);
         lz += (pj->z() - pi->z())*cotan(v10, v11)*cotan(v20, v21);
     }
+
+    return (lx*lx + ly*ly + lz*lz)/2.;
 }
 
 //Example with a tetraedra
