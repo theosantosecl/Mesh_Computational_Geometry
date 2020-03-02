@@ -20,7 +20,7 @@ void glVertexDraw(const Point & p) {
 
 
 // Get the face of a point
-Face Mesh::getFace(Point point){
+Face Mesh::getFace(Vertice point){
     int numFace = point.getNumFace();
     return facesTab[numFace];
 }
@@ -71,7 +71,7 @@ void Mesh::createFromData(std::string path){
         z_i =  std::stof(substring);
         line.erase(0, line.find(delimiter) + delimiter.length());
 
-        Point newPoint = Point(x_i,y_i,z_i, i);
+        Vertice newPoint = Vertice(x_i,y_i,z_i, i);
 
         vertexTab.push_back(newPoint);
     }
@@ -265,51 +265,22 @@ Circulator_on_vertices Mesh::endCircVertices(int point){
     return circ;
 }
 
-double pScal(float u[3], float v[3]){
-    return u[0]*v[0] + u[1]*v[1] + u[2]*v[2];
-}
-
-double pVecNorm(float u[3], float v[3]){
-    float a = u[1]*v[2] - u[2]*v[1];
-    float b = u[2]*v[0] - u[0]*v[2];
-    float c = u[0]*v[1] - u[1]*v[0];
-    return a*a + b*b + c*c;
-}
-
-double cotan(float u[3], float v[3]){
-    return pScal(u, v)/pVecNorm(u, v);
-}
-
 float Mesh::getLocalCurvature(int point){
     float lx = 0;
     float ly = 0;
     float lz = 0;
-    Point* pi = this->getPointPointeur(point);
+    Vertice* pi = this->getPointPointeur(point);
     for (Circulator_on_faces cf = this->beginCircFaces(point); !(cf == this->endCircFaces(point)); ++cf){
         int iPi = cf->getPlacePoint(point);
-        Point* pj = this->getPointPointeur(cf->point((iPi + 1) % 3));
+        double a = this->cotan(cf.getIndFace(), iPi+2 % 3);
+        Vertice* pj = this->getPointPointeur(cf->point((iPi + 1) % 3));
         Face* f1 = this->getFacePointeur(cf->getAdjFaces()[(iPi + 2) % 3]);
-        int iPi2 = f1->getPlacePoint(point);
-        float x = pi->x() - this->getPointPointeur(cf->point((iPi + 2) % 3))->x();
-        float y = pi->y() - this->getPointPointeur(cf->point((iPi + 2) % 3))->y();
-        float z = pi->z() - this->getPointPointeur(cf->point((iPi + 2) % 3))->z();
-        float v10[3] = { x, y, z};
-        x = this->getPointPointeur(cf->point((iPi + 1) % 3))->x() - this->getPointPointeur(cf->point((iPi + 2) % 3))->x();
-        y = this->getPointPointeur(cf->point((iPi + 1) % 3))->y() - this->getPointPointeur(cf->point((iPi + 2) % 3))->y();
-        z = this->getPointPointeur(cf->point((iPi + 1) % 3))->z() - this->getPointPointeur(cf->point((iPi + 2) % 3))->z();
-        float v11[3] = { x, y, z};
-        x = pi->x() - this->getPointPointeur(f1->point((iPi2 + 1) % 3))->x();
-        y = pi->y() - this->getPointPointeur(f1->point((iPi2 + 1) % 3))->y();
-        z = pi->z() - this->getPointPointeur(f1->point((iPi2 + 1) % 3))->z();;
-        float v20[3] = { x, y, z};
-        x = this->getPointPointeur(f1->point((iPi2 + 2) % 3))->x() - this->getPointPointeur(f1->point((iPi2 + 1) % 3))->x();
-        y = this->getPointPointeur(f1->point((iPi2 + 2) % 3))->y() - this->getPointPointeur(f1->point((iPi2 + 1) % 3))->y();
-        z = this->getPointPointeur(f1->point((iPi2 + 2) % 3))->z() - this->getPointPointeur(f1->point((iPi2 + 1) % 3))->z();
-        float v21[3] = { x, y, z};
+        int iPj = f1->getPlacePoint(point);
+        double b = this->cotan(f1->getIndice(), iPj-1 % 3);
 
-        lx += (pj->x() - pi->x())*cotan(v10, v11)*cotan(v20, v21);
-        ly += (pj->y() - pi->y())*cotan(v10, v11)*cotan(v20, v21);
-        lz += (pj->z() - pi->z())*cotan(v10, v11)*cotan(v20, v21);
+        lx += (pj->getPoint()->x() - pi->getPoint()->x())*a*b;
+        ly += (pj->getPoint()->y() - pi->getPoint()->y())*a*b;
+        lz += (pj->getPoint()->z() - pi->getPoint()->z())*a*b;
     }
 
     return (lx*lx + ly*ly + lz*lz)/2.;
@@ -326,9 +297,9 @@ void Mesh::drawMesh() {
 
         Face face = facesTab[i];
         glBegin(GL_TRIANGLES);
-            glVertexDraw(vertexTab[face.point(0)]);
-            glVertexDraw(vertexTab[face.point(1)]);
-            glVertexDraw(vertexTab[face.point(2)]);
+            glVertexDraw(*vertexTab[face.point(0)].getPoint());
+            glVertexDraw(*vertexTab[face.point(1)].getPoint());
+            glVertexDraw(*vertexTab[face.point(2)].getPoint());
         glEnd();
     }
 
@@ -340,16 +311,16 @@ void Mesh::drawMeshWireFrame() {
     for(int i = 0; i < facesTab.length(); i+=1) {
         Face face = facesTab[i];
         glBegin(GL_LINE_STRIP);
-            glVertexDraw(vertexTab[face.point(0)]);
-            glVertexDraw(vertexTab[face.point(1)]);
+            glVertexDraw(*vertexTab[face.point(0)].getPoint());
+            glVertexDraw(*vertexTab[face.point(1)].getPoint());
         glEnd();
         glBegin(GL_LINE_STRIP);
-            glVertexDraw(vertexTab[face.point(1)]);
-            glVertexDraw(vertexTab[face.point(2)]);
+            glVertexDraw(*vertexTab[face.point(1)].getPoint());
+            glVertexDraw(*vertexTab[face.point(2)].getPoint());
         glEnd();
         glBegin(GL_LINE_STRIP);
-            glVertexDraw(vertexTab[face.point(2)]);
-            glVertexDraw(vertexTab[face.point(0)]);
+            glVertexDraw(*vertexTab[face.point(2)].getPoint());
+            glVertexDraw(*vertexTab[face.point(0)].getPoint());
         glEnd();
     }
 
