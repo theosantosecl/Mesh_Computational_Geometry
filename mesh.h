@@ -4,6 +4,7 @@
 #include <QGLWidget>
 #include <iostream>
 #include <fstream>
+#include <cmath>
 
 
 
@@ -18,31 +19,66 @@ class Point
     double _x;
     double _y;
     double _z;
+
+public:
+    Point(): _x(), _y(), _z() {}
+    Point(double x_, double y_, double z_): _x(x_), _y(y_), _z(z_) {}
+
+    double x() const {return _x; }
+    double y() const {return _y; }
+    double z() const {return _z; }
+
+    double dot(Point point_){
+        return _x*point_.x() + _x*point_.y() + _z*point_.z();
+    }
+
+    Point vec(Point point_) {
+        double x = _y*point_.z() - _z*point_.y();
+        double y = _z*point_.x() - _x*point_.z();
+        double z = _x*point_.y() - _y*point_.x();
+        return Point(x, y, z);
+    }
+
+    double norm() {
+        return std::sqrt(_x*_x + _y*_y + _z*_z);
+    }
+
+
+    Point operator-(Point point_){
+        return Point(_x - point_.x(), _y - point_.y(), _z - point_.z());
+    }
+};
+
+class Vertice
+{
+    Point _point;
     int _numFace;
     int _indice;
 
 public:
-    Point():_x(),_y(),_z(), _numFace(-1) {}
-    Point(float x_, float y_, float z_):_x(x_),_y(y_),_z(z_),_numFace(-1) {}
+    Vertice():_point(), _numFace(-1) {}
+    Vertice(double x_, double y_, double z_): _point(x_, y_, z_), _numFace(-1) {}
 
-    Point(float x_, float y_, float z_, int indice):_x(x_),_y(y_),_z(z_), _numFace(-1), _indice(indice) {}
+    Vertice(float x_, float y_, float z_, int indice): _point(x_, y_, z_), _numFace(-1), _indice(indice) {}
 
     // get
-    double x() const { return _x; }
-    double y() const { return _y; }
-    double z() const { return _z; }
+    Point* getPoint() { return &_point; }
 
 
     int getIndice(){return _indice;}
     void setIndice(int indice){_indice = indice;}
     int getNumFace() {return _numFace;}
     void setNumFace(int numFace){_numFace = numFace;}
+
+    Point operator-(Vertice vertice_){
+        return _point - *vertice_.getPoint();
+    }
 };
 
 class Face
 {
 
-    int _sommets[3];
+    int _vertices[3];
     int _indice;
 
     //Indices de faces
@@ -50,25 +86,25 @@ class Face
     //TODO : changer en tableau à la place de QVector
 
 public:
-    Face(): _sommets() {}
-    Face(int point1_, int point2_, int point3_): _sommets()  {
-        _sommets[0] = point1_;
-        _sommets[1] = point2_;
-        _sommets[2] = point3_;
+    Face(): _vertices() {}
+    Face(int point1_, int point2_, int point3_): _vertices()  {
+        _vertices[0] = point1_;
+        _vertices[1] = point2_;
+        _vertices[2] = point3_;
     }
-    Face(int point1_, int point2_, int point3_, int indice): _sommets(), _indice(indice){
-        _sommets[0] = point1_;
-        _sommets[1] = point2_;
-        _sommets[2] = point3_;
+    Face(int point1_, int point2_, int point3_, int indice): _vertices(), _indice(indice){
+        _vertices[0] = point1_;
+        _vertices[1] = point2_;
+        _vertices[2] = point3_;
     }
 
     //get
     int point(int i) const {
-        return _sommets[i];
+        return _vertices[i];
     }
     //set
     void setPoint(int i, int indice){
-        _sommets[i] = indice;
+        _vertices[i] = indice;
     }
 
     int * getAdjFaces() {
@@ -99,7 +135,7 @@ public:
     }
 
     bool verifyAdj(Face face2){
-        QVector<int> points1 = {_sommets[0], _sommets[1], _sommets[2]};
+        QVector<int> points1 = {_vertices[0], _vertices[1], _vertices[2]};
         QVector<int> points2 = {face2.point(0), face2.point(1), face2.point(2)};
         bool aumoinsun = false;
         bool aumoinsdeux = false;
@@ -122,8 +158,8 @@ public:
     int getDernierPoint(int ind1, int ind2){
         int indiceDernierPoint = 0;
         for (int i = 0; i < 3; i++){
-            if (_sommets[i] != ind1 && _sommets[i] != ind2){
-                indiceDernierPoint = _sommets[i];
+            if (_vertices[i] != ind1 && _vertices[i] != ind2){
+                indiceDernierPoint = _vertices[i];
             }
         }
         return indiceDernierPoint;
@@ -133,7 +169,7 @@ public:
     int getPlaceDernierPoint(int ind1, int ind2){
         int placeDernierPoint = 0;
         for (int i = 0; i < 3; i++){
-            if (_sommets[i] != ind1 && _sommets[i] != ind2){
+            if (_vertices[i] != ind1 && _vertices[i] != ind2){
                 placeDernierPoint = i;
             }
         }
@@ -144,7 +180,7 @@ public:
     int getPlacePoint(int indPoint){
         int placePoint = -1;
         for (int i = 0; i < 3; i++){
-            if (_sommets[i] == indPoint){
+            if (_vertices[i] == indPoint){
                 placePoint = i;
             }
         }
@@ -156,10 +192,7 @@ public:
         _adjFaces[place] = adjFace;
     }
 
-
     void splitFace(int indNewPoint);
-
-
 };
 
 
@@ -167,9 +200,9 @@ public:
 
 class Mesh
 {
-    QVector<Point> vertexTab;
+    QVector<Vertice> vertexTab;
     QVector<Face> facesTab;
-    Point underlyingPoint;
+    Vertice underlyingPoint;
 
 
 public:
@@ -177,11 +210,11 @@ public:
 
     void drawMesh();
     void drawMeshWireFrame();
-    Face getFace(Point point); // INUTILE POUR LE MOMENT
+    Face getFace(Vertice point); // INUTILE POUR LE MOMENT
     Face getFace(int indice){return facesTab[indice];}
     Face* getFacePointeur(int indice){return &(facesTab[indice]);}
-    Point* getPointPointeur(int indice){ return &(vertexTab[indice]);}
-    Point getUnderlyingPoint();
+    Vertice* getPointPointeur(int indice){ return &(vertexTab[indice]);}
+    Vertice getUnderlyingPoint();
     void createFromData(std::string path);
     void addAdjacence(int face1, int face2, int point1, int point2);
     void addAdjacence(Face& face1, Face& face2, int point1, int point2);
@@ -199,15 +232,20 @@ public:
     Circulator_on_vertices beginCircVertices(int point);
     Circulator_on_vertices endCircVertices(int point);
 
-    void splitFace(int indFace, Point _point);
+    void splitFace(int indFace, Vertice _point);
 
     void splitFace(int indFace, double x, double y, double z){
-        Point _point = Point(x,y,z);
+        Vertice _vertice = Vertice(x,y,z);
         std::cout<<"dans le splitFace"<<std::endl;
-        splitFace(indFace, _point);
+        splitFace(indFace, _vertice);
         std::cout<<"fini splitFace"<<std::endl;
     }
 
+    double cotan(int face_, int point_){
+        Point u = vertexTab[facesTab[face_].point((point_ + 2) % 3)] - vertexTab[facesTab[face_].point((point_) % 3)];
+        Point v = vertexTab[facesTab[face_].point((point_ + 1) % 3)] - vertexTab[facesTab[face_].point((point_) % 3)];
+        return u.dot(v) / (u.vec(v)).norm();
+    }
 
 };
 
@@ -262,11 +300,11 @@ public:
         _indice++;
     }
 
-    Point& operator*(){
+    Vertice& operator*(){
         return *(_mesh->getPointPointeur(_indice));
     }
 
-    Point* operator->(){
+    Vertice* operator->(){
         return _mesh->getPointPointeur(_indice);
     }
 
@@ -345,11 +383,11 @@ public:
     }
 
 
-    Point& operator*(){
+    Vertice& operator*(){
         return *(_mesh->getPointPointeur(_indPoint));
     }
 
-    Point* operator->(){
+    Vertice* operator->(){
         return _mesh->getPointPointeur(_indPoint);
     }
 
@@ -368,10 +406,6 @@ public:
     Circulator_on_faces getCircFace(){
         return circFace;
     }
-
-
-
-
 
 };
 
