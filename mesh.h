@@ -43,7 +43,6 @@ public:
         return std::sqrt(_x*_x + _y*_y + _z*_z);
     }
 
-
     Point operator-(Point point_){
         return Point(_x - point_.x(), _y - point_.y(), _z - point_.z());
     }
@@ -240,6 +239,8 @@ public:
         splitFace(indFace, _vertice);
         std::cout<<"fini splitFace"<<std::endl;
     }
+
+    void flip(int indF0, int indF1);
 
     double cotan(int face_, int point_){
         Point u = vertexTab[facesTab[face_].point((point_ + 2) % 3)] - vertexTab[facesTab[face_].point((point_) % 3)];

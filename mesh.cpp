@@ -259,6 +259,45 @@ Circulator_on_vertices Mesh::endCircVertices(int point){
     return circ;
 }
 
+void  Mesh::flip(int indF0, int indF1) {
+    int * af0 = facesTab[indF0].getAdjFaces();
+    int i = 0;
+    while (i < 3) {
+        if (af0[i] == indF1) break;
+        i++;
+    }
+    int * af1 = facesTab[indF1].getAdjFaces();
+    int j = 0;
+    while (j < 3) {
+        if (af1[j] == indF0) break;
+        j++;
+    }
+
+    // On échange les points
+    facesTab[indF0].setPoint((i-1)%3, facesTab[indF1].point(j));
+    facesTab[indF1].setPoint((j+1)%3, facesTab[indF0].point(i));
+
+    // On met à jour les faces adjacentes des faces adjacentes de f0 et f1
+    int ia0 = facesTab[indF0].getAdjFaces()[(i+1)%3];
+    Face a0 = facesTab[ia0];
+    a0.getAdjFaces()[a0.getPlaceDernierPoint(facesTab[indF1].point((j+1)%3), facesTab[indF1].point((j+2)%3))] = indF1;
+    int ia1 = facesTab[indF1].getAdjFaces()[(j+1)%3];
+    Face a1 = facesTab[ia1];
+    a1.getAdjFaces()[a1.getPlaceDernierPoint(facesTab[indF0].point((i+1)%3), facesTab[indF0].point((i+2)%3))] = indF0;
+
+    // On met à jour des adjacences dans f0
+    af0[i] = ia1;
+    af0[(i+1)%3] = indF1;
+
+    // On met à jour des adjacences dans f1
+    af0[j] = ia0;
+    af0[(j+1)%3] = indF0;
+
+    // Mise à jour des points
+    vertexTab[facesTab[indF0].point((i+1)%3)].setNumFace(indF0);
+    vertexTab[facesTab[indF1].point((j+1)%3)].setNumFace(indF1);
+}
+
 float Mesh::getLocalCurvature(int point){
     float lx = 0;
     float ly = 0;
