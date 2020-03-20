@@ -209,7 +209,8 @@ public:
 
     void drawMesh();
     void drawMeshWireFrame();
-    Face getFace(Vertice point); // INUTILE POUR LE MOMENT
+    void drawMeshTwoFaces(int face1, int face2);
+    Face getFace(Vertice point);
     Face getFace(int indice){return facesTab[indice];}
     Face* getFacePointeur(int indice){return &(facesTab[indice]);}
     Vertice* getPointPointeur(int indice){ return &(vertexTab[indice]);}
@@ -238,6 +239,14 @@ public:
         std::cout<<"dans le splitFace"<<std::endl;
         splitFace(indFace, _vertice);
         std::cout<<"fini splitFace"<<std::endl;
+    }
+
+    void splitFace(int indFace){
+        Face face = facesTab[indFace];
+        double  x = (vertexTab[face.point(0)].getPoint()->x() + vertexTab[face.point(1)].getPoint()->x() + vertexTab[face.point(2)].getPoint()->x())/3;
+        double  y = (vertexTab[face.point(0)].getPoint()->y() + vertexTab[face.point(1)].getPoint()->y() + vertexTab[face.point(2)].getPoint()->y())/3;
+        double  z = (vertexTab[face.point(0)].getPoint()->z() + vertexTab[face.point(1)].getPoint()->z() + vertexTab[face.point(2)].getPoint()->z())/3;
+        splitFace(indFace, x, y, z);
     }
 
     void flip(int indF0, int indF1);
