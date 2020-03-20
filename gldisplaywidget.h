@@ -15,6 +15,7 @@ public:
     void paintGL(); // Display the scene Gl
     void resizeGL(int width, int height);
 
+
 protected:
     // Mouse Management
     void mousePressEvent(QMouseEvent *event);

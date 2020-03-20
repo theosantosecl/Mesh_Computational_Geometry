@@ -7,13 +7,16 @@ Mesh::Mesh()
     std::cout<<"Taille vertex : "<<vertexTab.length()<<std::endl;
     std::cout<<"Taille faces : "<<facesTab.length()<<std::endl;
 
-    splitFace(0, -0.5, -0.5, -1);
 
 
-    /*for (Iterator_on_vertices it = this->beginVertices(); !(it == this->endVertices()); ++it){
-        std::cout<<it.getIndice()<<" "<<(*it).getIndice()<<std::endl;
-    }
-    */
+
+    //If you want to split a face
+    //splitFace(2);
+
+    //If you want to flip two faces
+    flip(3,2);
+
+
 }
 
 
@@ -274,8 +277,13 @@ void  Mesh::flip(int indF0, int indF1) {
     }
 
     // On échange les points
-    facesTab[indF0].setPoint((i-1)%3, facesTab[indF1].point(j));
-    facesTab[indF1].setPoint((j+1)%3, facesTab[indF0].point(i));
+    Face* face0 = &(facesTab[indF0]);
+    Face* face1 = &(facesTab[indF1]);
+    int Pj = face1->point(j);
+    int Pi = face0->point(i);
+
+    face0->setPoint((i+2)%3, Pj);
+    face1->setPoint((j+2)%3, Pi);
 
     // On met à jour les faces adjacentes des faces adjacentes de f0 et f1
     int ia0 = facesTab[indF0].getAdjFaces()[(i+1)%3];
@@ -296,6 +304,7 @@ void  Mesh::flip(int indF0, int indF1) {
     // Mise à jour des points
     vertexTab[facesTab[indF0].point((i+1)%3)].setNumFace(indF0);
     vertexTab[facesTab[indF1].point((j+1)%3)].setNumFace(indF1);
+
 }
 
 float Mesh::getLocalCurvature(int point){
@@ -381,14 +390,20 @@ void Mesh::splitFace(int indFace, Vertice _point){
 
 }
 
-//Example with a tetraedra
+//Example
 void Mesh::drawMesh() {
+    int col1 = 0;
+    int col2 = 0;
+    int col3 = 0;
+
     for(int i = 0; i < facesTab.length(); i+=1) {
 
-        if (i%3 == 0) glColor3d(1,0,0);
-        else if (i%3 == 1) glColor3d(0,1,0);
-        else if (i%3 == 2) glColor3d(0,0,1);
-        else glColor3d(1,1,0);
+
+        if (i%3 == 0) col1++;
+        else if (i%3 == 1) col2++;
+        else if (i%3 == 2) col3++;
+        glColor3d(((float) (col1 % 5))/5,((float) (col2 % 5))/5,((float) (col3 % 5))/5);
+
 
         Face face = facesTab[i];
         glBegin(GL_TRIANGLES);
@@ -401,7 +416,7 @@ void Mesh::drawMesh() {
 
 }
 
-//Example with a wireframe tedraedra
+//Example with a wireframe
 void Mesh::drawMeshWireFrame() {
     for(int i = 0; i < facesTab.length(); i+=1) {
         Face face = facesTab[i];
@@ -418,4 +433,28 @@ void Mesh::drawMeshWireFrame() {
             glVertexDraw(*vertexTab[face.point(0)].getPoint());
         glEnd();
     }
+}
+
+//To put in evidence two faces
+void Mesh::drawMeshTwoFaces(int face1, int face2) {
+
+
+
+    for(int i = 0; i < facesTab.length(); i+=1) {
+
+
+
+        if (i==face1) glColor3d(1,0,0);
+        else if (i==face2) glColor3d(0,1,0);
+        else glColor3d(0,0,((double) (i%12))/12);
+
+        Face face = facesTab[i];
+        glBegin(GL_TRIANGLES);
+            glVertexDraw(*vertexTab[face.point(0)].getPoint());
+            glVertexDraw(*vertexTab[face.point(1)].getPoint());
+            glVertexDraw(*vertexTab[face.point(2)].getPoint());
+        glEnd();
+    }
+
+
 }

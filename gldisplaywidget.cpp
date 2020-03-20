@@ -45,9 +45,20 @@ void GLDisplayWidget::paintGL(){
     // Color for your mesh
     glColor3f(0, 1 ,0);
 
-    // example with a tetraedre
-    _mesh.drawMesh();
+    // To display with faces colors
+    //_mesh.drawMesh();
+
+    //To display with lines
+    //_mesh.drawMeshWireFrame();
+
+
+    // To display with faces colors, putting in evidence two faces in particular
+    _mesh.drawMeshTwoFaces(2,3);
 }
+
+
+
+
 
 void GLDisplayWidget::resizeGL(int width, int height){
 
