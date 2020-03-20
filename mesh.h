@@ -248,6 +248,19 @@ public:
         return u.dot(v) / (u.vec(v)).norm();
     }
 
+    double getSurface(int indFace) {
+        Face f = facesTab[indFace];
+        double det1 = vertexTab[f.point(0)].getPoint()->x() * ( vertexTab[f.point(1)].getPoint()->y() - vertexTab[f.point(2)].getPoint()->y() ) -
+                vertexTab[f.point(1)].getPoint()->x() * ( vertexTab[f.point(0)].getPoint()->y() - vertexTab[f.point(2)].getPoint()->y() ) +
+                vertexTab[f.point(2)].getPoint()->x() * ( vertexTab[f.point(0)].getPoint()->y() - vertexTab[f.point(1)].getPoint()->y() );
+        double det2 = vertexTab[f.point(0)].getPoint()->y() * ( vertexTab[f.point(1)].getPoint()->z() - vertexTab[f.point(2)].getPoint()->z() ) -
+                vertexTab[f.point(1)].getPoint()->y() * ( vertexTab[f.point(0)].getPoint()->z() - vertexTab[f.point(2)].getPoint()->z() ) +
+                vertexTab[f.point(2)].getPoint()->y() * ( vertexTab[f.point(0)].getPoint()->z() - vertexTab[f.point(1)].getPoint()->z() );
+        double det3 = vertexTab[f.point(0)].getPoint()->z() * ( vertexTab[f.point(1)].getPoint()->x() - vertexTab[f.point(2)].getPoint()->x() ) -
+                vertexTab[f.point(1)].getPoint()->z() * ( vertexTab[f.point(0)].getPoint()->x() - vertexTab[f.point(2)].getPoint()->x() ) +
+                vertexTab[f.point(2)].getPoint()->z() * ( vertexTab[f.point(0)].getPoint()->x() - vertexTab[f.point(1)].getPoint()->x() );
+        return std::sqrt(det1*det1 + det2*det2 + det3*det3)/2.;
+    }
 };
 
 class Iterator_on_faces{
