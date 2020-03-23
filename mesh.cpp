@@ -367,7 +367,7 @@ float Mesh::getLocalCurvature(int point){
         int iPj = f1->getPlacePoint(point);
         double b = this->cotan(f1->getIndice(), iPj-1 % 3);
 
-        a += getSurface(cf.getIndFace())/3.;
+        a += this->getSurface(cf.getIndFace())/3.;
         lx += (pj->getPoint()->x() - pi->getPoint()->x())*a*b;
         ly += (pj->getPoint()->y() - pi->getPoint()->y())*a*b;
         lz += (pj->getPoint()->z() - pi->getPoint()->z())*a*b;
