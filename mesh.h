@@ -209,6 +209,7 @@ public:
 
     void drawMesh();
     void drawMeshWireFrame();
+    void drawMeshPoints();
     void drawMeshTwoFaces(int face1, int face2);
     Face getFace(Vertice point);
     Face getFace(int indice){return facesTab[indice];}

@@ -26,6 +26,52 @@ void glVertexDraw(const Point & p) {
     glVertex3f(p.x(), p.y(), p.z());
 }
 
+int* HSVtoRGB(int H, double S, double V) {
+    double C = S * V;
+    double X = C * (1 - abs(fmod(H / 60.0, 2) - 1));
+    double m = V - C;
+    double Rs, Gs, Bs;
+
+    int output[3];
+
+    if(H >= 0 && H < 60) {
+        Rs = C;
+        Gs = X;
+        Bs = 0;
+    }
+    else if(H >= 60 && H < 120) {
+        Rs = X;
+        Gs = C;
+        Bs = 0;
+    }
+    else if(H >= 120 && H < 180) {
+        Rs = 0;
+        Gs = C;
+        Bs = X;
+    }
+    else if(H >= 180 && H < 240) {
+        Rs = 0;
+        Gs = X;
+        Bs = C;
+    }
+    else if(H >= 240 && H < 300) {
+        Rs = X;
+        Gs = 0;
+        Bs = C;
+    }
+    else {
+        Rs = C;
+        Gs = 0;
+        Bs = X;
+    }
+
+    output[0] = (Rs + m) * 255;
+    output[1] = (Gs + m) * 255;
+    output[2] = (Bs + m) * 255;
+
+    return output;
+}
+
 
 // Get the face of a point
 Face Mesh::getFace(Vertice point){
@@ -431,6 +477,22 @@ void Mesh::drawMeshWireFrame() {
         glBegin(GL_LINE_STRIP);
             glVertexDraw(*vertexTab[face.point(2)].getPoint());
             glVertexDraw(*vertexTab[face.point(0)].getPoint());
+        glEnd();
+    }
+}
+
+//Example with a wireframe
+void Mesh::drawMeshPoints() {
+    for(int i = 0; i < vertexTab.length(); i+=1) {
+        const int s = 10;
+        const int l = 10;
+        const double max = 1000;
+        const double min = 1;
+        int* color = HSVtoRGB((getLocalCurvature(i) - min) / max, s, l);
+
+        glColor3i(color[0], color[1], color[2]);
+        glBegin(GL_POINTS);
+            glVertexDraw(*vertexTab[i].getPoint());
         glEnd();
     }
 }
