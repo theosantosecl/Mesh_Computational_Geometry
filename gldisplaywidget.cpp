@@ -53,7 +53,10 @@ void GLDisplayWidget::paintGL(){
 
 
     // To display with faces colors, putting in evidence two faces in particular
-    _mesh.drawMeshTwoFaces(2,3);
+    //_mesh.drawMeshTwoFaces(2,3);
+
+    // To display just the points with colors linked to the curvature
+    _mesh.drawMeshPoints();
 }
 
 
