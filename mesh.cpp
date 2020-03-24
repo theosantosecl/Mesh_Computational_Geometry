@@ -353,10 +353,10 @@ void  Mesh::flip(int indF0, int indF1) {
 
 }
 
-float Mesh::getLocalCurvature(int point){
-    float lx = 0;
-    float ly = 0;
-    float lz = 0;
+double Mesh::getLocalCurvature(int point){
+    double lx = 0;
+    double ly = 0;
+    double lz = 0;
     double a = 0;
     Vertice* pi = this->getPointPointeur(point);
     for (Circulator_on_faces cf = this->beginCircFaces(point); !(cf == this->endCircFaces(point)); ++cf){
