@@ -296,7 +296,7 @@ public:
     }
 
     //Calcul de la courbure autour du sommet
-    float getLocalCurvature(int point);
+    double getLocalCurvature(int point);
 };
 
 
