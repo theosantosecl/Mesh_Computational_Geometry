@@ -354,10 +354,10 @@ void  Mesh::flip(int indF0, int indF1) {
 }
 
 double Mesh::getLocalCurvature(int point){
-    double lx = 0;
-    double ly = 0;
-    double lz = 0;
-    double a = 0;
+    double lx = 0; // Laplacien selon x
+    double ly = 0; // Laplacien selon y
+    double lz = 0; // Laplacien selon z
+    double s = 0; // Surface
     Vertice* pi = this->getPointPointeur(point);
     for (Circulator_on_faces cf = this->beginCircFaces(point); !(cf == this->endCircFaces(point)); ++cf){
         int iPi = cf->getPlacePoint(point);
@@ -367,13 +367,13 @@ double Mesh::getLocalCurvature(int point){
         int iPj = f1->getPlacePoint(point);
         double b = this->cotan(f1->getIndice(), iPj-1 % 3);
 
-        a += this->getSurface(cf.getIndFace())/3.;
+        s += this->getSurface(cf.getIndFace())/3.;
         lx += (pj->getPoint()->x() - pi->getPoint()->x())*a*b;
         ly += (pj->getPoint()->y() - pi->getPoint()->y())*a*b;
         lz += (pj->getPoint()->z() - pi->getPoint()->z())*a*b;
     }
 
-    return (std::sqrt(lx*lx + ly*ly + lz*lz)/(2.*a))/2.;
+    return (std::sqrt(lx*lx + ly*ly + lz*lz)/(2.*s))/2.;
 }
 
 void Mesh::splitFace(int indFace, Vertice _point){
