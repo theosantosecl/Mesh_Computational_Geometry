@@ -28,10 +28,12 @@ public:
     double y() const {return _y; }
     double z() const {return _z; }
 
+    //Effectue un produit scalaire
     double dot(Point point_){
         return _x*point_.x() + _x*point_.y() + _z*point_.z();
     }
 
+    //Effectue un produit vectoriel
     Point vec(Point point_) {
         double x = _y*point_.z() - _z*point_.y();
         double y = _z*point_.x() - _x*point_.z();
@@ -39,6 +41,7 @@ public:
         return Point(x, y, z);
     }
 
+    //Norme du vecteur
     double norm() {
         return std::sqrt(_x*_x + _y*_y + _z*_z);
     }
@@ -50,9 +53,9 @@ public:
 
 class Vertice
 {
-    Point _point;
-    int _numFace;
-    int _indice;
+    Point _point; //Point correspondant
+    int _numFace; //Indice dans la liste des faces de la face de référence
+    int _indice; //Indice dans la liste des vertex du Mesh
 
 public:
     Vertice():_point(), _numFace(-1) {}
@@ -82,7 +85,6 @@ class Face
 
     //Indices de faces
     int _adjFaces[3];
-    //TODO : changer en tableau à la place de QVector
 
 public:
     Face(): _vertices() {}
@@ -128,7 +130,7 @@ public:
         return rep;
     }
 
-
+    //Vérification de l'appartenance à la liste d'adjacence
     bool hasAdjFace(Face potentialAdjFace){
         return hasAdjFace(potentialAdjFace.getIndice());
     }
@@ -153,7 +155,7 @@ public:
         return aumoinsdeux;
     }
 
-
+    //Donne le dernier sommet du
     int getDernierPoint(int ind1, int ind2){
         int indiceDernierPoint = 0;
         for (int i = 0; i < 3; i++){
@@ -186,6 +188,7 @@ public:
         return placePoint;
     }
 
+    //Ajout d'une adjacence à la bonne place
     void addAdjFace(int adjFace, int point1, int point2){
         int place = getPlaceDernierPoint(point1, point2);
         _adjFaces[place] = adjFace;
@@ -207,23 +210,37 @@ class Mesh
 public:
     Mesh();
 
+    //Méthode draw
     void drawMesh();
     void drawMeshWireFrame();
     void drawMeshPoints();
     void drawMeshTwoFaces(int face1, int face2);
-    Face getFace(Vertice point);
+
+    // get
+    Face getFace(Vertice point); //Récupère la face de référence du sommet
     Face getFace(int indice){return facesTab[indice];}
-    Face* getFacePointeur(int indice){return &(facesTab[indice]);}
-    Vertice* getPointPointeur(int indice){ return &(vertexTab[indice]);}
+
+    Face* getFacePointeur(int indice){return &(facesTab[indice]);} //Passage de l'indice au pointeur
+    Vertice* getPointPointeur(int indice){ return &(vertexTab[indice]);} //Passage de l'indice au pointeur
+
     Vertice getUnderlyingPoint();
-    void createFromData(std::string path);
-    void addAdjacence(int face1, int face2, int point1, int point2);
-    void addAdjacence(Face& face1, Face& face2, int point1, int point2);
-    void testAdjRandom();
+
     int getNbFaces(){ return facesTab.length();}
     int getNbVertices(){ return vertexTab.length();}
-    double getLocalCurvature(int point);
 
+    //Importation à partir d'un fichier .off
+    void createFromData(std::string path);
+
+    //Ajout d'adjacences entre faces
+    void addAdjacence(int face1, int face2, int point1, int point2);
+    void addAdjacence(Face& face1, Face& face2, int point1, int point2);
+
+    //Test randomisé d'adjacence pour vérifier que les faces ont bien été attachées
+    void testAdjRandom();
+
+
+
+    //Méthodes pour les itérateurs
     Iterator_on_faces beginFaces();
     Iterator_on_faces endFaces();
     Iterator_on_vertices beginVertices();
@@ -233,15 +250,15 @@ public:
     Circulator_on_vertices beginCircVertices(int point);
     Circulator_on_vertices endCircVertices(int point);
 
-    void splitFace(int indFace, Vertice _point);
 
+    //Méthodes de split
+    void splitFace(int indFace, Vertice _point);
+    //Version avec uniquement les coordonnées
     void splitFace(int indFace, double x, double y, double z){
         Vertice _vertice = Vertice(x,y,z);
-        std::cout<<"dans le splitFace"<<std::endl;
         splitFace(indFace, _vertice);
-        std::cout<<"fini splitFace"<<std::endl;
     }
-
+    //Version sans point de split : on prend comme point de split le barycentre
     void splitFace(int indFace){
         Face face = facesTab[indFace];
         double  x = (vertexTab[face.point(0)].getPoint()->x() + vertexTab[face.point(1)].getPoint()->x() + vertexTab[face.point(2)].getPoint()->x())/3;
@@ -250,14 +267,20 @@ public:
         splitFace(indFace, x, y, z);
     }
 
+    //Méthode de flip
     void flip(int indF0, int indF1);
 
+
+
+    //Méthodes pour le calcul de la courbure
+    //Cotangente
     double cotan(int face_, int point_){
         Point u = vertexTab[facesTab[face_].point((point_ + 2) % 3)] - vertexTab[facesTab[face_].point((point_) % 3)];
         Point v = vertexTab[facesTab[face_].point((point_ + 1) % 3)] - vertexTab[facesTab[face_].point((point_) % 3)];
         return u.dot(v) / (u.vec(v)).norm();
     }
 
+    //Surface d'une face
     double getSurface(int indFace) {
         Face f = facesTab[indFace];
         double det1 = vertexTab[f.point(0)].getPoint()->x() * ( vertexTab[f.point(1)].getPoint()->y() - vertexTab[f.point(2)].getPoint()->y() ) -
@@ -271,7 +294,13 @@ public:
                 vertexTab[f.point(2)].getPoint()->z() * ( vertexTab[f.point(0)].getPoint()->x() - vertexTab[f.point(1)].getPoint()->x() );
         return std::sqrt(det1*det1 + det2*det2 + det3*det3)/2.;
     }
+
+    //Calcul de la courbure autour du sommet
+    double getLocalCurvature(int point);
 };
+
+
+//Itérateurs et circulateurs
 
 class Iterator_on_faces{
     int _indice;

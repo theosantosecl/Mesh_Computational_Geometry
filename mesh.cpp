@@ -2,7 +2,7 @@
 
 Mesh::Mesh()
 {
-    createFromData("E:\\Centrale\\Pougne\\4A\\MSO - MOS\\C++ etc\\cube.off");
+    createFromData("E:\\Centrale\\Pougne\\4A\\MSO - MOS\\C++ etc\\queen.off");
 
     std::cout<<"Taille vertex : "<<vertexTab.length()<<std::endl;
     std::cout<<"Taille faces : "<<facesTab.length()<<std::endl;
@@ -10,29 +10,27 @@ Mesh::Mesh()
 
 
 
-    //If you want to split a face
+    //Pour tester le split d'une face
     //splitFace(2);
 
-    //If you want to flip two faces
+    //Pour tester le flip de l'arête entre deux faces
     flip(3,2);
 
 
 }
 
 
-// The following functions could be displaced into a module OpenGLDisplayMesh that would include Mesh
 // Draw a vertex
 void glVertexDraw(const Point & p) {
     glVertex3f(p.x(), p.y(), p.z());
 }
 
-int* HSVtoRGB(int H, double S, double V) {
+//Convertit les données de courbure en RDB pour la représentation graphique
+void HSVtoRGB(int output[], int H, double S, double V) {
     double C = S * V;
     double X = C * (1 - abs(fmod(H / 60.0, 2) - 1));
     double m = V - C;
     double Rs, Gs, Bs;
-
-    int output[3];
 
     if(H >= 0 && H < 60) {
         Rs = C;
@@ -69,29 +67,26 @@ int* HSVtoRGB(int H, double S, double V) {
     output[1] = (Gs + m) * 255;
     output[2] = (Bs + m) * 255;
 
-    return output;
 }
 
 
-// Get the face of a point
+//Face de référence (renvoie la Face)
 Face Mesh::getFace(Vertice point){
     int numFace = point.getNumFace();
     return facesTab[numFace];
 }
 
 
-// read a off file
+//Lire un fichier .off
 void Mesh::createFromData(std::string path){
     std::string line;
     std::ifstream thefile;
     thefile.open(path.c_str());
     getline(thefile,line);
     std::string delimiter = " ";
-    std::cout<<line<<std::endl;
 
 
-
-    //Première ligne
+    //Première ligne à lire, donnant la longueur des données
     int nbVertices;
     int nbFaces;
 
@@ -103,9 +98,12 @@ void Mesh::createFromData(std::string path){
     nbFaces =  std::atoi(substring.c_str());
     line.erase(0, line.find(delimiter) + delimiter.length());
 
-    std::cout<<nbVertices<<" "<<nbFaces<<std::endl;
 
-    //Les points
+
+
+    //Récupération de tous les sommets
+
+    //Coordonnées
     float x_i;
     float y_i;
     float z_i;
@@ -127,25 +125,30 @@ void Mesh::createFromData(std::string path){
         z_i =  std::stof(substring);
         line.erase(0, line.find(delimiter) + delimiter.length());
 
+        //Création du sommet et ajout dans la liste des sommets du maillage
         Vertice newPoint = Vertice(x_i,y_i,z_i, i);
-
         vertexTab.push_back(newPoint);
-        std::cout<<line<<std::endl;
     }
 
 
 
-    // Les faces
+    // Lecture et ajout des faces
+
+    //Identifiants des sommets de la face
     int idPoint1;
     int idPoint2;
     int idPoint3;
 
-    std::map <std::pair<int,int>, int> edgemap;
+
+    //
+    std::map <std::pair<int,int>, int> edgemap; // Map des arêtes qui auront été déjà rencontrées par le passé
 
     for (int i = 0; i < nbFaces; i++){
+
+
+        //Récupération des trois points de la face
         getline(thefile,line);
 
-        //TODO : S'adapter au nombre de sommets
         line.erase(0, line.find(delimiter) + delimiter.length());
 
         substring = line.substr(0,line.find(delimiter));
@@ -161,26 +164,33 @@ void Mesh::createFromData(std::string path){
         line.erase(0, line.find(delimiter) + delimiter.length());
 
 
+
+        //Création de la face
         Face newFace = Face(idPoint1,idPoint2,idPoint3,i);
+        //Ajout de la face comme face de référence à chaque sommet qui n'en n'a pas déjà (par défaut à -1)
         if (vertexTab[idPoint1].getNumFace() < 0){vertexTab[idPoint1].setNumFace(i);}
         if (vertexTab[idPoint2].getNumFace() < 0){vertexTab[idPoint2].setNumFace(i);}
         if (vertexTab[idPoint3].getNumFace() < 0){vertexTab[idPoint3].setNumFace(i);}
-
+        //Ajout de la face à la liste des faces du maillage
         facesTab.append(newFace);
 
 
+
+
+        //Gestion des adjacences : première adjacence, sur l'arête entre le point1 et le point2
         if ((edgemap.find(std::make_pair(idPoint1,idPoint2)) == edgemap.end()) &&
-                (edgemap.find(std::make_pair(idPoint2,idPoint1)) == edgemap.end())){
+                (edgemap.find(std::make_pair(idPoint2,idPoint1)) == edgemap.end())){ //Si on n'a pas encore rencontré cette arête
+            //Alors la face n'a pas encore de face adjacente : on ajoute alors simplement l'arête aux arêtes rencontrées, avec l'indice de face correspondant
             edgemap[std::make_pair(idPoint1,idPoint2)] = i;
             edgemap[std::make_pair(idPoint2,idPoint1)] = i;
-        } else {
-          if (edgemap.find(std::make_pair(idPoint1,idPoint2)) != edgemap.end()){
-              int autreFace = edgemap[std::make_pair(idPoint1,idPoint2)];
-              addAdjacence(autreFace,i, idPoint1, idPoint2);
-              edgemap.erase(std::make_pair(idPoint1,idPoint2));
+        } else {//Si on a déjà rencontré cette arête
+          if (edgemap.find(std::make_pair(idPoint1,idPoint2)) != edgemap.end()){//Si on l'a recontré dans le sens point1,point2
+              int autreFace = edgemap[std::make_pair(idPoint1,idPoint2)]; // On va chercher l'indice de la face
+              addAdjacence(autreFace,i, idPoint1, idPoint2); //On créé l'adjacence
+              edgemap.erase(std::make_pair(idPoint1,idPoint2)); //L'arête ne peut concerner qu'une face : on n'a donc plus besoin de l'arête qu'on peut enlever de la map
               edgemap.erase(std::make_pair(idPoint2,idPoint1));
           }
-          else{
+          else{ //Rajout du cas où point2,point1 n'existe pas, juste au cas où (normalement ça n'arrive jamais)
               int autreFace = edgemap[std::make_pair(idPoint2,idPoint1)];
               addAdjacence(autreFace,i, idPoint1, idPoint2);
               edgemap.erase(std::make_pair(idPoint2,idPoint1));
@@ -190,6 +200,8 @@ void Mesh::createFromData(std::string path){
 
 
 
+        //Gestion des adjacences : deuxième adjacence, sur l'arête entre le point1 et le point3
+        //Le fonctionnement est identique
         if ((edgemap.find(std::make_pair(idPoint1,idPoint3)) == edgemap.end()) &&
                 (edgemap.find(std::make_pair(idPoint3,idPoint1)) == edgemap.end())){
             edgemap[std::make_pair(idPoint1,idPoint3)] = i;
@@ -212,6 +224,8 @@ void Mesh::createFromData(std::string path){
 
 
 
+        //Gestion des adjacences : troisième adjacence, sur l'arête entre le point3 et le point2
+        //Le fonctionnement est identique
         if ((edgemap.find(std::make_pair(idPoint3,idPoint2)) == edgemap.end()) &&
                 (edgemap.find(std::make_pair(idPoint2,idPoint3)) == edgemap.end())){
             edgemap[std::make_pair(idPoint3,idPoint2)] = i;
@@ -234,31 +248,35 @@ void Mesh::createFromData(std::string path){
 
 }
 
+//Test d'adjacence entre les faces
 void Mesh::testAdjRandom(){
     int ind = rand()%facesTab.length();
     Face face = facesTab[ind];
     int * facesInd = face.getAdjFaces();
-    std::cout<<"Face n°"<<ind<<std::endl<<std::endl;
+    std::cout<<"Face n°"<<ind<<std::endl<<std::endl; //Face de test
 
     for (int i = 0; i < 3;i++){
-        Face faceToCompare = facesTab[facesInd[i]];
-        std::cout<<"La face : "<<facesInd[i]<<std::endl;
-        std::cout<<"Adjacent            : "<<face.verifyAdj(faceToCompare)<<std::endl;
-        std::cout<<"Adjacent réciproque : "<<faceToCompare.verifyAdj(face)<<std::endl;
-        std::cout<<"Bien dans la liste  : "<<faceToCompare.hasAdjFace(face)<<std::endl;
+        Face faceToCompare = facesTab[facesInd[i]]; //
+        std::cout<<"La face : "<<facesInd[i]<<std::endl; //Face dont l'adjacence est testée
+        std::cout<<"Adjacent            : "<<face.verifyAdj(faceToCompare)<<std::endl; //On vérifie l'adjacence dans un sens
+        std::cout<<"Adjacent réciproque : "<<faceToCompare.verifyAdj(face)<<std::endl; //Puis dans l'autre
+        std::cout<<"Bien dans la liste  : "<<faceToCompare.hasAdjFace(face)<<std::endl;// On vérifie que la face de test est bien dans la liste d'adjacence de la liste adjacente
     }
 }
 
+//Ajout d'une adjacence dans le tableau d'adjacence
 void Mesh::addAdjacence(Face& face1, Face& face2, int point1, int point2){
     face1.addAdjFace(face2.getIndice(), point1, point2);
     face2.addAdjFace(face1.getIndice(), point1, point2);
 }
-
 void Mesh::addAdjacence(int indFace1, int indFace2, int indPoint1, int indPoint2){
     facesTab[indFace1].addAdjFace(indFace2, indPoint1, indPoint2);
     facesTab[indFace2].addAdjFace(indFace1, indPoint1, indPoint2);
 }
 
+
+
+//Méthodes des itérateurs et circulateurs
 Iterator_on_faces Mesh::beginFaces(){
     Iterator_on_faces it(this);
     return it;
@@ -308,6 +326,8 @@ Circulator_on_vertices Mesh::endCircVertices(int point){
     return circ;
 }
 
+
+//Flip de deux arêtes
 void  Mesh::flip(int indF0, int indF1) {
     int * af0 = facesTab[indF0].getAdjFaces();
     int i = 0;
@@ -359,7 +379,11 @@ double Mesh::getLocalCurvature(int point){
     double lz = 0; // Laplacien selon z
     double s = 0; // Surface
     Vertice* pi = this->getPointPointeur(point);
+    int i = 0;
+
+    std::cout<<"Point : "<<point<<std::endl;
     for (Circulator_on_faces cf = this->beginCircFaces(point); !(cf == this->endCircFaces(point)); ++cf){
+
         int iPi = cf->getPlacePoint(point);
         double a = this->cotan(cf.getIndFace(), iPi+2 % 3);
         Vertice* pj = this->getPointPointeur(cf->point((iPi + 1) % 3));
@@ -371,11 +395,16 @@ double Mesh::getLocalCurvature(int point){
         lx += (pj->getPoint()->x() - pi->getPoint()->x())*a*b;
         ly += (pj->getPoint()->y() - pi->getPoint()->y())*a*b;
         lz += (pj->getPoint()->z() - pi->getPoint()->z())*a*b;
+        i++;
+        if (i%100 == 0){
+            std::cout<<i<<std::endl;
+        }
     }
 
     return (std::sqrt(lx*lx + ly*ly + lz*lz)/(2.*s))/2.;
 }
 
+//Split d'une Face
 void Mesh::splitFace(int indFace, Vertice _point){
     _point.setIndice(vertexTab.length());
     vertexTab.push_back(_point);
@@ -414,29 +443,27 @@ void Mesh::splitFace(int indFace, Vertice _point){
     facesTab.push_back(newFacet2);
 
 
-   //Redéfinition des adjacences + changement de sommet pour if0
+    //Changement d'un sommet pour if0
     _face0->setPoint(0,indNewPoint);
 
+
+    //Redéfinition des adjacences
     // de if0
    _face0->getAdjFaces()[1] = indFacet;
    _face0->getAdjFaces()[2] = indFacet2;
-
     // de if1
    facesTab[face1].getAdjFaces()[(facesTab[face1].getPlacePoint(sommet0)-1)%3] = indFacet;
-
     // de if2
    facesTab[face2].getAdjFaces()[(facesTab[face2].getPlacePoint(sommet0)+1)%3] = indFacet2;
 
 
-   //Redéfinition des faces des points
+   //Redéfinition des faces de référence des sommets pour ceux qui ont changé de faces
    vertexTab[sommet0].setNumFace(indFacet2);
-   std::cout<<"HEY"<<std::endl;
    vertexTab[indNewPoint].setNumFace(indFace);
-   std::cout<<"YEH"<<std::endl;
 
 }
 
-//Example
+//Dessin des faces de couleurs différentes
 void Mesh::drawMesh() {
     int col1 = 0;
     int col2 = 0;
@@ -462,7 +489,7 @@ void Mesh::drawMesh() {
 
 }
 
-//Example with a wireframe
+//Dessin des arêtes
 void Mesh::drawMeshWireFrame() {
     for(int i = 0; i < facesTab.length(); i+=1) {
         Face face = facesTab[i];
@@ -481,15 +508,19 @@ void Mesh::drawMeshWireFrame() {
     }
 }
 
-//Example with a wireframe
+//Dessin des sommets en mettant en éivdence la courbure
 void Mesh::drawMeshPoints() {
+    int color[3];
     for(int i = 0; i < vertexTab.length(); i+=1) {
+        color[0] = 0;
+        color[1] = 0;
+        color[2] = 0;
+
         const int s = 10;
         const int l = 10;
         const double max = 1000;
         const double min = 1;
-        int* color = HSVtoRGB((getLocalCurvature(i) - min) / max, s, l);
-
+        HSVtoRGB(color, (getLocalCurvature(i) - min) / max, s, l);
         glColor3i(color[0], color[1], color[2]);
         glBegin(GL_POINTS);
             glVertexDraw(*vertexTab[i].getPoint());
@@ -497,15 +528,13 @@ void Mesh::drawMeshPoints() {
     }
 }
 
-//To put in evidence two faces
+//Dessin des faces en couleur : deux sont mises en évidence (utilisé pour tester et montrer le flip)
 void Mesh::drawMeshTwoFaces(int face1, int face2) {
-
-
 
     for(int i = 0; i < facesTab.length(); i+=1) {
 
 
-
+        //Toutes les faces sont en nuances de bleu sauf les deux mises en évidences, en rouge et en vert
         if (i==face1) glColor3d(1,0,0);
         else if (i==face2) glColor3d(0,1,0);
         else glColor3d(0,0,((double) (i%12))/12);
@@ -517,6 +546,5 @@ void Mesh::drawMeshTwoFaces(int face1, int face2) {
             glVertexDraw(*vertexTab[face.point(2)].getPoint());
         glEnd();
     }
-
 
 }
