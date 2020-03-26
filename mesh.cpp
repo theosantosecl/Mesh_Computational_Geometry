@@ -511,7 +511,6 @@ double Mesh::getLocalCurvature(int point){
     int i = 0;
 
     //std::cout<<"Point : "<<point<<std::endl;
-
     Circulator_on_faces cf = this->beginCircFaces(point);
     do {
         //std::cout<<cf.getIndFace()<<std::endl;
@@ -651,12 +650,17 @@ void Mesh::drawMeshPoints() {
         color[0] = 0;
         color[1] = 0;
         color[2] = 0;
-
-        const int s = 10;
-        const int l = 10;
-        const double max = 1000;
-        const double min = 1;
-        HSVtoRGB(color, (getLocalCurvature(i) - min) / max, s, l);
+        const double s = 0.1;
+        const double l = 0.1;
+        const double max = 2891;
+        const double min = 0;
+        /*if (getLocalCurvature(i) < 1){
+            std::cout<<"Indice : "<<i<<std::endl;
+            std::cout<<"a "<<getLocalCurvature(i)<<std::endl;
+            std::cout<<"b "<<(getLocalCurvature(i) - min) / (max - min)<<std::endl;
+            std::cout<<"c "<<240 + (360 - 240)*(getLocalCurvature(i) - min) / (max - min)<<std::endl;
+        }*/
+        HSVtoRGB(color, 240 + (360 - 240)*(getLocalCurvature(i) - min) / (max - min), s, l);
         if (i%100 == 0) std::cout<<"Couleur de "<<i<<" : "<<color[0]<<" "<<color[1]<<" "<<color[2]<<std::endl;
         glColor3i(color[0], color[1], color[2]);
         glBegin(GL_POINTS);
