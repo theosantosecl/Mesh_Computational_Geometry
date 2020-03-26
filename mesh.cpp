@@ -4,7 +4,7 @@
 
 Mesh::Mesh()
 {
-    createFromDatat("/home/vault/Code/m2_ds/Mesh_Computational_Geometry/cube.off");
+    createFromDatat("/home/vault/Code/m2_ds/Mesh_Computational_Geometry/queen.off");
 
     std::cout<<"Taille vertex : "<<vertexTab.length()<<std::endl;
     std::cout<<"Taille faces : "<<facesTab.length()<<std::endl;
@@ -502,10 +502,10 @@ double Mesh::getLocalCurvature(int point){
     Vertice* pi = this->getPointPointeur(point);
     int i = 0;
 
-    std::cout<<"Point : "<<point<<std::endl;
+    //std::cout<<"Point : "<<point<<std::endl;
     Circulator_on_faces cf = this->beginCircFaces(point);
     do {
-        std::cout<<cf.getIndFace()<<std::endl;
+        //std::cout<<cf.getIndFace()<<std::endl;
 
         int iPi = cf->getPlacePoint(point);
         double a = this->cotan(cf.getIndFace(), iPi+2 % 3);
@@ -643,11 +643,16 @@ void Mesh::drawMeshPoints() {
         color[1] = 0;
         color[2] = 0;
 
-        const int s = 10;
-        const int l = 10;
-        const double max = 1000;
-        const double min = 1;
-        HSVtoRGB(color, (getLocalCurvature(i) - min) / max, s, l);
+        const double s = 0.1;
+        const double l = 0.1;
+        const double max = 2891;
+        const double min = 0;
+        if (getLocalCurvature(i) < 1){
+            std::cout<<"a "<<getLocalCurvature(i)<<std::endl;
+            std::cout<<"b "<<(getLocalCurvature(i) - min) / (max - min)<<std::endl;
+            std::cout<<"c "<<240 + (360 - 240)*(getLocalCurvature(i) - min) / (max - min)<<std::endl;
+        }
+        HSVtoRGB(color, 240 + (360 - 240)*(getLocalCurvature(i) - min) / (max - min), s, l);
         glColor3i(color[0], color[1], color[2]);
         glBegin(GL_POINTS);
             glVertexDraw(*vertexTab[i].getPoint());
