@@ -1,8 +1,10 @@
 #include "mesh.h"
+#include <iostream>
+#include <fstream>
 
 Mesh::Mesh()
 {
-    createFromData("E:\\Centrale\\Pougne\\4A\\MSO - MOS\\C++ etc\\queen.off");
+    createFromDatat("/home/vault/Code/m2_ds/Mesh_Computational_Geometry/queen.off");
 
     std::cout<<"Taille vertex : "<<vertexTab.length()<<std::endl;
     std::cout<<"Taille faces : "<<facesTab.length()<<std::endl;
@@ -14,7 +16,7 @@ Mesh::Mesh()
     //splitFace(2);
 
     //Pour tester le flip de l'arête entre deux faces
-    flip(3,2);
+    // flip(3,2);
 
 
 }
@@ -76,6 +78,128 @@ Face Mesh::getFace(Vertice point){
     return facesTab[numFace];
 }
 
+//Lire un fichier .off
+void Mesh::createFromDatat(std::string path){
+
+    std::fstream offFile(path, std::ios_base::in);
+    int nLine = 0;
+    std::fstream line;
+
+    if (offFile.is_open())
+    {
+      int nbVertices, nbFaces, _;
+      offFile>>nbVertices>>nbFaces>>_;
+      while ( nLine < nbVertices){
+          double x, y, z;
+          offFile>>x>>y>>z;
+
+          Vertice newPoint = Vertice(x,y,z, nLine);
+          vertexTab.push_back(newPoint);
+
+          nLine++;
+      }
+      nLine = 0;
+      std::map <std::pair<int,int>, int> edgemap; // Map des arêtes qui auront été déjà rencontrées par le passé
+      while ( nLine < nbFaces){
+          int nVert;
+          offFile>>nVert;
+          if(nVert != 3){
+              std::cerr<<"Can only read triangle faces";
+              return;
+          }
+          int points[nVert];
+          for (int i = 0; i < nVert; i++){
+              int iPoint;
+              offFile>>iPoint;
+              points[i] = iPoint;
+          }
+
+          //Création de la face
+          Face newFace = Face(points[0],points[1],points[2],nLine);
+          //Ajout de la face comme face de référence à chaque sommet qui n'en n'a pas déjà (par défaut à -1)
+          if (vertexTab[points[0]].getNumFace() < 0){vertexTab[points[0]].setNumFace(nLine);}
+          if (vertexTab[points[1]].getNumFace() < 0){vertexTab[points[1]].setNumFace(nLine);}
+          if (vertexTab[points[2]].getNumFace() < 0){vertexTab[points[2]].setNumFace(nLine);}
+          //Ajout de la face à la liste des faces du maillage
+          facesTab.append(newFace);
+
+
+
+
+          //Gestion des adjacences : première adjacence, sur l'arête entre le point1 et le point2
+          if ((edgemap.find(std::make_pair(points[0],points[1])) == edgemap.end()) &&
+                  (edgemap.find(std::make_pair(points[1],points[0])) == edgemap.end())){ //Si on n'a pas encore rencontré cette arête
+              //Alors la face n'a pas encore de face adjacente : on ajoute alors simplement l'arête aux arêtes rencontrées, avec l'indice de face correspondant
+              edgemap[std::make_pair(points[0],points[1])] = nLine;
+              edgemap[std::make_pair(points[1],points[0])] = nLine;
+          } else {//Si on a déjà rencontré cette arête
+            if (edgemap.find(std::make_pair(points[0],points[1])) != edgemap.end()){//Si on l'a recontré dans le sens point1,point2
+                int autreFace = edgemap[std::make_pair(points[0],points[1])]; // On va chercher l'indice de la face
+                addAdjacence(autreFace,nLine, points[0], points[1]); //On créé l'adjacence
+                edgemap.erase(std::make_pair(points[0],points[1])); //L'arête ne peut concerner qu'une face : on n'a donc plus besoin de l'arête qu'on peut enlever de la map
+                edgemap.erase(std::make_pair(points[1],points[0]));
+            }
+            else{ //Rajout du cas où point2,point1 n'existe pas, juste au cas où (normalement ça n'arrive jamais)
+                int autreFace = edgemap[std::make_pair(points[1],points[0])];
+                addAdjacence(autreFace,nLine, points[0], points[1]);
+                edgemap.erase(std::make_pair(points[1],points[0]));
+                edgemap.erase(std::make_pair(points[0],points[1]));
+            }
+          }
+
+
+
+          //Gestion des adjacences : deuxième adjacence, sur l'arête entre le point1 et le point3
+          //Le fonctionnement est identique
+          if ((edgemap.find(std::make_pair(points[0],points[2])) == edgemap.end()) &&
+                  (edgemap.find(std::make_pair(points[2],points[0])) == edgemap.end())){
+              edgemap[std::make_pair(points[0],points[2])] = nLine;
+              edgemap[std::make_pair(points[2],points[0])] = nLine;
+
+          } else {
+            if (edgemap.find(std::make_pair(points[0],points[2])) != edgemap.end()){
+                int autreFace = edgemap[std::make_pair(points[0],points[2])];
+                addAdjacence(autreFace,nLine, points[0], points[2]);
+                edgemap.erase(std::make_pair(points[0],points[2]));
+                edgemap.erase(std::make_pair(points[2],points[0]));
+            }
+            else{
+                int autreFace = edgemap[std::make_pair(points[2],points[0])];
+                addAdjacence(autreFace,nLine, points[0], points[2]);
+                edgemap.erase(std::make_pair(points[2],points[0]));
+                edgemap.erase(std::make_pair(points[0],points[2]));
+            }
+          }
+
+
+
+          //Gestion des adjacences : troisième adjacence, sur l'arête entre le point3 et le point2
+          //Le fonctionnement est identique
+          if ((edgemap.find(std::make_pair(points[2],points[1])) == edgemap.end()) &&
+                  (edgemap.find(std::make_pair(points[1],points[2])) == edgemap.end())){
+              edgemap[std::make_pair(points[2],points[1])] = nLine;
+              edgemap[std::make_pair(points[1],points[2])] = nLine;
+          } else {
+            if (edgemap.find(std::make_pair(points[2],points[1])) != edgemap.end()){
+                int autreFace = edgemap[std::make_pair(points[2],points[1])];
+                addAdjacence(autreFace,nLine, points[2], points[1]);
+                edgemap.erase(std::make_pair(points[2],points[1]));
+                edgemap.erase(std::make_pair(points[1],points[2]));
+            }
+            else{
+                int autreFace = edgemap[std::make_pair(points[1],points[2])];
+                addAdjacence(autreFace,nLine, points[2], points[1]);
+                edgemap.erase(std::make_pair(points[1],points[2]));
+                edgemap.erase(std::make_pair(points[2],points[1]));
+            }
+          }
+
+          nLine++;
+      }
+      offFile.close();
+    }
+    else std::cout << "Unable to open file";
+}
 
 //Lire un fichier .off
 void Mesh::createFromData(std::string path){
@@ -383,13 +507,14 @@ double Mesh::getLocalCurvature(int point){
 
     std::cout<<"Point : "<<point<<std::endl;
     for (Circulator_on_faces cf = this->beginCircFaces(point); !(cf == this->endCircFaces(point)); ++cf){
+        std::cout<<cf.getIndFace()<<std::endl;
 
         int iPi = cf->getPlacePoint(point);
         double a = this->cotan(cf.getIndFace(), iPi+2 % 3);
         Vertice* pj = this->getPointPointeur(cf->point((iPi + 1) % 3));
         Face* f1 = this->getFacePointeur(cf->getAdjFaces()[(iPi + 2) % 3]);
         int iPj = f1->getPlacePoint(point);
-        double b = this->cotan(f1->getIndice(), iPj-1 % 3);
+        double b = this->cotan(f1->getIndice(), iPj+2 % 3);
 
         s += this->getSurface(cf.getIndFace())/3.;
         lx += (pj->getPoint()->x() - pi->getPoint()->x())*a*b;
@@ -398,6 +523,9 @@ double Mesh::getLocalCurvature(int point){
         i++;
         if (i%100 == 0){
             std::cout<<i<<std::endl;
+        }
+        if (point == 994){
+            std::cout<<"Méchant point"<<std::endl;
         }
     }
 
