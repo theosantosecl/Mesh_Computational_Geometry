@@ -6,6 +6,10 @@ Mesh::Mesh()
 {
     createFromDatat("E:\\Centrale\\Pougne\\4A\\MSO - MOS\\C++ etc\\queen.off");
 
+    for(int i = 0; i < vertexTab.length(); i++) {
+        vertexTab[i].setLocalCurvature(getLocalCurvature(i));
+    }
+
     std::cout<<"Taille vertex : "<<vertexTab.length()<<std::endl;
     std::cout<<"Taille faces : "<<facesTab.length()<<std::endl;
 
@@ -33,6 +37,7 @@ void HSVtoRGB(int output[], int H, double S, double V) {
     double X = C * (1 - abs(fmod(H / 60.0, 2) - 1));
     double m = V - C;
     double Rs, Gs, Bs;
+    int coef = INT_MAX;
 
     if(H >= 0 && H < 60) {
         Rs = C;
@@ -65,15 +70,15 @@ void HSVtoRGB(int output[], int H, double S, double V) {
         Bs = X;
     }
 
-    output[0] = (Rs + m) * 255;
-    output[1] = (Gs + m) * 255;
-    output[2] = (Bs + m) * 255;
+    output[0] = (Rs + m) * coef;
+    output[1] = (Gs + m) * coef;
+    output[2] = (Bs + m) * coef;
 
 }
 
 
 //Face de référence (renvoie la Face)
-Face Mesh::getFace(Vertice point){
+Face Mesh::getFace(Vertex point){
     int numFace = point.getNumFace();
     return facesTab[numFace];
 }
@@ -93,7 +98,7 @@ void Mesh::createFromDatat(std::string path){
           double x, y, z;
           offFile>>x>>y>>z;
 
-          Vertice newPoint = Vertice(x,y,z, nLine);
+          Vertex newPoint = Vertex(x,y,z, nLine);
           vertexTab.push_back(newPoint);
 
           nLine++;
@@ -250,7 +255,7 @@ void Mesh::createFromData(std::string path){
         line.erase(0, line.find(delimiter) + delimiter.length());
 
         //Création du sommet et ajout dans la liste des sommets du maillage
-        Vertice newPoint = Vertice(x_i,y_i,z_i, i);
+        Vertex newPoint = Vertex(x_i,y_i,z_i, i);
         vertexTab.push_back(newPoint);
     }
 
@@ -507,7 +512,7 @@ double Mesh::getLocalCurvature(int point){
     double ly = 0; // Laplacien selon y
     double lz = 0; // Laplacien selon z
     double s = 0; // Surface
-    Vertice* pi = this->getPointPointeur(point);
+    Vertex* pi = this->getPointPointeur(point);
     int i = 0;
 
     //std::cout<<"Point : "<<point<<std::endl;
@@ -517,7 +522,7 @@ double Mesh::getLocalCurvature(int point){
 
         int iPi = cf->getPlacePoint(point);
         double a = this->cotan(cf.getIndFace(), iPi+2 % 3);
-        Vertice* pj = this->getPointPointeur(cf->point((iPi + 1) % 3));
+        Vertex* pj = this->getPointPointeur(cf->point((iPi + 1) % 3));
         Face* f1 = this->getFacePointeur(cf->getAdjFaces()[(iPi + 2) % 3]);
         int iPj = f1->getPlacePoint(point);
         double b = this->cotan(f1->getIndice(), iPj+2 % 3);
@@ -540,7 +545,7 @@ double Mesh::getLocalCurvature(int point){
 }
 
 //Split d'une Face
-void Mesh::splitFace(int indFace, Vertice _point){
+void Mesh::splitFace(int indFace, Vertex _point){
     _point.setIndice(vertexTab.length());
     vertexTab.push_back(_point);
 
@@ -646,21 +651,21 @@ void Mesh::drawMeshWireFrame() {
 //Dessin des sommets en mettant en éivdence la courbure
 void Mesh::drawMeshPoints() {
     int color[3];
-    for(int i = 0; i < vertexTab.length(); i+=1) {
+    for(int i = 0; i < vertexTab.length(); i++) {
         color[0] = 0;
         color[1] = 0;
         color[2] = 0;
 
         const double s = 0.9;
         const double l = 0.9;
-        const double max = 546;
+        const double max = 300;
         const double min = 0;
-        /*if (getLocalCurvature(i) > 546){
-            std::cout<<"a "<<getLocalCurvature(i)<<std::endl;
-            std::cout<<"b "<<(getLocalCurvature(i) - min) / (max - min)<<std::endl;
-            std::cout<<"c "<<240 + (360 - 240)*(getLocalCurvature(i) - min) / (max - min)<<std::endl;
+        /*if (vertexTab[i].getLocalCurvature() > 300){
+            std::cout<<"a "<<vertexTab[i].getLocalCurvature()<<std::endl;
+            std::cout<<"b "<<(vertexTab[i].getLocalCurvature() - min) / (max - min)<<std::endl;
+            std::cout<<"c "<<240 + (360 - 240)*(vertexTab[i].getLocalCurvature() - min) / (max - min)<<std::endl;
         }*/
-        HSVtoRGB(color, 240 + (360 - 240)*(getLocalCurvature(i) - min) / (max - min), s, l);
+        HSVtoRGB(color, 240 + (360 - 240)*(vertexTab[i].getLocalCurvature() - min) / (max - min), s, l);
         //if (i%100 == 0) std::cout<<"Couleur de "<<i<<" : "<<color[0]<<" "<<color[1]<<" "<<color[2]<<std::endl;
         glColor3ub(color[0], color[1], color[2]);
         glBegin(GL_POINTS);

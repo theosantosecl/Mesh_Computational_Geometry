@@ -51,17 +51,18 @@ public:
     }
 };
 
-class Vertice
+class Vertex
 {
     Point _point; //Point correspondant
     int _numFace; //Indice dans la liste des faces de la face de référence
     int _indice; //Indice dans la liste des vertex du Mesh
+    int _localCurvature;
 
 public:
-    Vertice():_point(), _numFace(-1) {}
-    Vertice(double x_, double y_, double z_): _point(x_, y_, z_), _numFace(-1) {}
+    Vertex():_point(), _numFace(-1) {}
+    Vertex(double x_, double y_, double z_): _point(x_, y_, z_), _numFace(-1) {}
 
-    Vertice(float x_, float y_, float z_, int indice): _point(x_, y_, z_), _numFace(-1), _indice(indice) {}
+    Vertex(float x_, float y_, float z_, int indice): _point(x_, y_, z_), _numFace(-1), _indice(indice) {}
 
     // get
     Point* getPoint() { return &_point; }
@@ -71,8 +72,10 @@ public:
     void setIndice(int indice){_indice = indice;}
     int getNumFace() {return _numFace;}
     void setNumFace(int numFace){_numFace = numFace;}
+    void setLocalCurvature(double curvature){_localCurvature = curvature;}
+    double getLocalCurvature(){ return _localCurvature; }
 
-    Point operator-(Vertice vertice_){
+    Point operator-(Vertex vertice_){
         return _point - *vertice_.getPoint();
     }
 };
@@ -202,9 +205,9 @@ public:
 
 class Mesh
 {
-    QVector<Vertice> vertexTab;
+    QVector<Vertex> vertexTab;
     QVector<Face> facesTab;
-    Vertice underlyingPoint;
+    Vertex underlyingPoint;
 
 
 public:
@@ -217,13 +220,13 @@ public:
     void drawMeshTwoFaces(int face1, int face2);
 
     // get
-    Face getFace(Vertice point); //Récupère la face de référence du sommet
+    Face getFace(Vertex point); //Récupère la face de référence du sommet
     Face getFace(int indice){return facesTab[indice];}
 
     Face* getFacePointeur(int indice){return &(facesTab[indice]);} //Passage de l'indice au pointeur
-    Vertice* getPointPointeur(int indice){ return &(vertexTab[indice]);} //Passage de l'indice au pointeur
+    Vertex* getPointPointeur(int indice){ return &(vertexTab[indice]);} //Passage de l'indice au pointeur
 
-    Vertice getUnderlyingPoint();
+    Vertex getUnderlyingPoint();
 
     int getNbFaces(){ return facesTab.length();}
     int getNbVertices(){ return vertexTab.length();}
@@ -253,10 +256,10 @@ public:
 
 
     //Méthodes de split
-    void splitFace(int indFace, Vertice _point);
+    void splitFace(int indFace, Vertex _point);
     //Version avec uniquement les coordonnées
     void splitFace(int indFace, double x, double y, double z){
-        Vertice _vertice = Vertice(x,y,z);
+        Vertex _vertice = Vertex(x,y,z);
         splitFace(indFace, _vertice);
     }
     //Version sans point de split : on prend comme point de split le barycentre
@@ -354,11 +357,11 @@ public:
         _indice++;
     }
 
-    Vertice& operator*(){
+    Vertex& operator*(){
         return *(_mesh->getPointPointeur(_indice));
     }
 
-    Vertice* operator->(){
+    Vertex* operator->(){
         return _mesh->getPointPointeur(_indice);
     }
 
@@ -437,11 +440,11 @@ public:
     }
 
 
-    Vertice& operator*(){
+    Vertex& operator*(){
         return *(_mesh->getPointPointeur(_indPoint));
     }
 
-    Vertice* operator->(){
+    Vertex* operator->(){
         return _mesh->getPointPointeur(_indPoint);
     }
 
