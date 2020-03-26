@@ -49,7 +49,7 @@ void GLDisplayWidget::paintGL(){
     //_mesh.drawMesh();
 
     //To display with lines
-    _mesh.drawMeshWireFrame();
+    //_mesh.drawMeshWireFrame();
 
 
     // To display with faces colors, putting in evidence two faces in particular

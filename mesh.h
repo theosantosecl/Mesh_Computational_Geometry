@@ -229,6 +229,7 @@ public:
     int getNbVertices(){ return vertexTab.length();}
 
     //Importation à partir d'un fichier .off
+    void createFromDatat(std::string path);
     void createFromData(std::string path);
 
     //Ajout d'adjacences entre faces
