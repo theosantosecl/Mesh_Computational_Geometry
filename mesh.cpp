@@ -2,7 +2,7 @@
 
 Mesh::Mesh()
 {
-    createFromData("E:\\Centrale\\Pougne\\4A\\MSO - MOS\\C++ etc\\queen.off");
+    createFromData("E:\\Centrale\\Pougne\\4A\\MSO - MOS\\C++ etc\\cube.off");
 
     std::cout<<"Taille vertex : "<<vertexTab.length()<<std::endl;
     std::cout<<"Taille faces : "<<facesTab.length()<<std::endl;
@@ -14,7 +14,7 @@ Mesh::Mesh()
     //splitFace(2);
 
     //Pour tester le flip de l'arête entre deux faces
-    flip(3,2);
+    //flip(3,2);
 
 
 }
@@ -186,11 +186,13 @@ void Mesh::createFromData(std::string path){
         } else {//Si on a déjà rencontré cette arête
           if (edgemap.find(std::make_pair(idPoint1,idPoint2)) != edgemap.end()){//Si on l'a recontré dans le sens point1,point2
               int autreFace = edgemap[std::make_pair(idPoint1,idPoint2)]; // On va chercher l'indice de la face
+              if (autreFace == i) std::cout<<"Alerte même face : "<<i<<" pour l'arête : ("<<idPoint1<<","<<idPoint2<<")"<<std::endl;
               addAdjacence(autreFace,i, idPoint1, idPoint2); //On créé l'adjacence
               edgemap.erase(std::make_pair(idPoint1,idPoint2)); //L'arête ne peut concerner qu'une face : on n'a donc plus besoin de l'arête qu'on peut enlever de la map
               edgemap.erase(std::make_pair(idPoint2,idPoint1));
           }
           else{ //Rajout du cas où point2,point1 n'existe pas, juste au cas où (normalement ça n'arrive jamais)
+              std::cout<<"Passage dans le else "<<std::endl;
               int autreFace = edgemap[std::make_pair(idPoint2,idPoint1)];
               addAdjacence(autreFace,i, idPoint1, idPoint2);
               edgemap.erase(std::make_pair(idPoint2,idPoint1));
@@ -210,11 +212,14 @@ void Mesh::createFromData(std::string path){
         } else {
           if (edgemap.find(std::make_pair(idPoint1,idPoint3)) != edgemap.end()){
               int autreFace = edgemap[std::make_pair(idPoint1,idPoint3)];
+
+              if (autreFace == i) std::cout<<"Alerte même face : "<<i<<" pour l'arête : ("<<idPoint1<<","<<idPoint3<<")"<<std::endl;
               addAdjacence(autreFace,i, idPoint1, idPoint3);
               edgemap.erase(std::make_pair(idPoint1,idPoint3));
               edgemap.erase(std::make_pair(idPoint3,idPoint1));
           }
           else{
+              std::cout<<"Passage dans le else "<<std::endl;
               int autreFace = edgemap[std::make_pair(idPoint3,idPoint1)];
               addAdjacence(autreFace,i, idPoint1, idPoint3);
               edgemap.erase(std::make_pair(idPoint3,idPoint1));
@@ -233,11 +238,14 @@ void Mesh::createFromData(std::string path){
         } else {
           if (edgemap.find(std::make_pair(idPoint3,idPoint2)) != edgemap.end()){
               int autreFace = edgemap[std::make_pair(idPoint3,idPoint2)];
+
+              if (autreFace == i) std::cout<<"Alerte même face : "<<i<<" pour l'arête : ("<<idPoint1<<","<<idPoint2<<")"<<std::endl;
               addAdjacence(autreFace,i, idPoint3, idPoint2);
               edgemap.erase(std::make_pair(idPoint3,idPoint2));
               edgemap.erase(std::make_pair(idPoint2,idPoint3));
           }
           else{
+              std::cout<<"Passage dans le else "<<std::endl;
               int autreFace = edgemap[std::make_pair(idPoint2,idPoint3)];
               addAdjacence(autreFace,i, idPoint3, idPoint2);
               edgemap.erase(std::make_pair(idPoint2,idPoint3));
