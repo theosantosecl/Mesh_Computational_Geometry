@@ -648,16 +648,17 @@ void Mesh::drawMeshPoints() {
         color[1] = 0;
         color[2] = 0;
 
-        const double s = 0.9;
-        const double l = 0.9;
-        const double max = 300;
+        const double s = 0.99;
+        const double l = 0.99;
+        const double max = 20;
         const double min = 0;
-        if (vertexTab[i].getLocalCurvature() > 300){
-            std::cout<<"a "<<vertexTab[i].getLocalCurvature()<<std::endl;
-            std::cout<<"b "<<(vertexTab[i].getLocalCurvature() - min) / (max - min)<<std::endl;
-            std::cout<<"c "<<240 + (360 - 240)*(vertexTab[i].getLocalCurvature() - min) / (max - min)<<std::endl;
-        }
-        HSVtoRGB(color, 240 + (360 - 240)*(vertexTab[i].getLocalCurvature() - min) / (max - min), s, l);
+        //if (vertexTab[i].getLocalCurvature() > 300){
+        //    std::cout<<"a "<<vertexTab[i].getLocalCurvature()<<std::endl;
+        //    std::cout<<"b "<<(vertexTab[i].getLocalCurvature() - min) / (max - min)<<std::endl;
+        //    std::cout<<"c "<<240 + (360 - 240)*(vertexTab[i].getLocalCurvature() - min) / (max - min)<<std::endl;
+        //}
+        HSVtoRGB(color, 120. + (360. - 120.)*(std::min(vertexTab[i].getLocalCurvature(), max) - min) / (max - min), s, l);
+        // HSVtoRGB(color, 120. + (360. - 120.)*(max - min) / (max - min), s, l);
         glColor3i(color[0], color[1], color[2]);
         glBegin(GL_POINTS);
             glVertexDraw(*vertexTab[i].getPoint());
