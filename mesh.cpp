@@ -4,7 +4,8 @@
 
 Mesh::Mesh()
 {
-    createFromDatat("/home/vault/Code/m2_ds/Mesh_Computational_Geometry/queen.off");
+    //createFromData("/home/vault/Code/m2_ds/Mesh_Computational_Geometry/cube.off");
+    createFromData("/home/vault/Code/m2_ds/Mesh_Computational_Geometry/quen.off");
 
     for(int i = 0; i < vertexTab.length(); i++) {
         vertexTab[i].setLocalCurvature(getLocalCurvature(i));
@@ -84,7 +85,7 @@ Face Mesh::getFace(Vertex point){
 }
 
 //Lire un fichier .off
-void Mesh::createFromDatat(std::string path){
+void Mesh::createFromData(std::string path){
 
     std::fstream offFile(path, std::ios_base::in);
     int nLine = 0;
@@ -203,178 +204,7 @@ void Mesh::createFromDatat(std::string path){
       }
       offFile.close();
     }
-    else std::cout << "Unable to open file";
-}
-
-//Lire un fichier .off
-void Mesh::createFromData(std::string path){
-    std::string line;
-    std::ifstream thefile;
-    thefile.open(path.c_str());
-    getline(thefile,line);
-    std::string delimiter = " ";
-
-
-    //Première ligne à lire, donnant la longueur des données
-    int nbVertices;
-    int nbFaces;
-
-    std::string substring = line.substr(0,line.find(delimiter));
-    nbVertices =  std::atoi(substring.c_str());
-    line.erase(0, line.find(delimiter) + delimiter.length());
-
-    substring = line.substr(0,line.find(delimiter));
-    nbFaces =  std::atoi(substring.c_str());
-    line.erase(0, line.find(delimiter) + delimiter.length());
-
-
-
-
-    //Récupération de tous les sommets
-
-    //Coordonnées
-    float x_i;
-    float y_i;
-    float z_i;
-
-
-    for (int i = 0; i < nbVertices; i++){
-        getline(thefile,line);
-
-
-        substring = line.substr(0,line.find(delimiter));
-        x_i =  std::stof(substring);
-        line.erase(0, line.find(delimiter) + delimiter.length());
-
-        substring = line.substr(0,line.find(delimiter));
-        y_i =  std::stof(substring);
-        line.erase(0, line.find(delimiter) + delimiter.length());
-
-        substring = line.substr(0,line.find(delimiter));
-        z_i =  std::stof(substring);
-        line.erase(0, line.find(delimiter) + delimiter.length());
-
-        //Création du sommet et ajout dans la liste des sommets du maillage
-        Vertex newPoint = Vertex(x_i,y_i,z_i, i);
-        vertexTab.push_back(newPoint);
-    }
-
-
-
-    // Lecture et ajout des faces
-
-    //Identifiants des sommets de la face
-    int idPoint1;
-    int idPoint2;
-    int idPoint3;
-
-
-    //
-    std::map <std::pair<int,int>, int> edgemap; // Map des arêtes qui auront été déjà rencontrées par le passé
-
-    for (int i = 0; i < nbFaces; i++){
-
-
-        //Récupération des trois points de la face
-        getline(thefile,line);
-
-        line.erase(0, line.find(delimiter) + delimiter.length());
-
-        substring = line.substr(0,line.find(delimiter));
-        idPoint1 =  std::atoi(substring.c_str());
-        line.erase(0, line.find(delimiter) + delimiter.length());
-
-        substring = line.substr(0,line.find(delimiter));
-        idPoint2 =  std::atoi(substring.c_str());
-        line.erase(0, line.find(delimiter) + delimiter.length());
-
-        substring = line.substr(0,line.find(delimiter));
-        idPoint3 =  std::atoi(substring.c_str());
-        line.erase(0, line.find(delimiter) + delimiter.length());
-
-
-
-        //Création de la face
-        Face newFace = Face(idPoint1,idPoint2,idPoint3,i);
-        //Ajout de la face comme face de référence à chaque sommet qui n'en n'a pas déjà (par défaut à -1)
-        if (vertexTab[idPoint1].getNumFace() < 0){vertexTab[idPoint1].setNumFace(i);}
-        if (vertexTab[idPoint2].getNumFace() < 0){vertexTab[idPoint2].setNumFace(i);}
-        if (vertexTab[idPoint3].getNumFace() < 0){vertexTab[idPoint3].setNumFace(i);}
-        //Ajout de la face à la liste des faces du maillage
-        facesTab.append(newFace);
-
-
-
-
-        //Gestion des adjacences : première adjacence, sur l'arête entre le point1 et le point2
-        if ((edgemap.find(std::make_pair(idPoint1,idPoint2)) == edgemap.end()) &&
-                (edgemap.find(std::make_pair(idPoint2,idPoint1)) == edgemap.end())){ //Si on n'a pas encore rencontré cette arête
-            //Alors la face n'a pas encore de face adjacente : on ajoute alors simplement l'arête aux arêtes rencontrées, avec l'indice de face correspondant
-            edgemap[std::make_pair(idPoint1,idPoint2)] = i;
-            edgemap[std::make_pair(idPoint2,idPoint1)] = i;
-        } else {//Si on a déjà rencontré cette arête
-          if (edgemap.find(std::make_pair(idPoint1,idPoint2)) != edgemap.end()){//Si on l'a recontré dans le sens point1,point2
-              int autreFace = edgemap[std::make_pair(idPoint1,idPoint2)]; // On va chercher l'indice de la face
-              addAdjacence(autreFace,i, idPoint1, idPoint2); //On créé l'adjacence
-              edgemap.erase(std::make_pair(idPoint1,idPoint2)); //L'arête ne peut concerner qu'une face : on n'a donc plus besoin de l'arête qu'on peut enlever de la map
-              edgemap.erase(std::make_pair(idPoint2,idPoint1));
-          }
-          else{ //Rajout du cas où point2,point1 n'existe pas, juste au cas où (normalement ça n'arrive jamais)
-              int autreFace = edgemap[std::make_pair(idPoint2,idPoint1)];
-              addAdjacence(autreFace,i, idPoint1, idPoint2);
-              edgemap.erase(std::make_pair(idPoint2,idPoint1));
-              edgemap.erase(std::make_pair(idPoint1,idPoint2));
-          }
-        }
-
-
-
-        //Gestion des adjacences : deuxième adjacence, sur l'arête entre le point1 et le point3
-        //Le fonctionnement est identique
-        if ((edgemap.find(std::make_pair(idPoint1,idPoint3)) == edgemap.end()) &&
-                (edgemap.find(std::make_pair(idPoint3,idPoint1)) == edgemap.end())){
-            edgemap[std::make_pair(idPoint1,idPoint3)] = i;
-            edgemap[std::make_pair(idPoint3,idPoint1)] = i;
-
-        } else {
-          if (edgemap.find(std::make_pair(idPoint1,idPoint3)) != edgemap.end()){
-              int autreFace = edgemap[std::make_pair(idPoint1,idPoint3)];
-              addAdjacence(autreFace,i, idPoint1, idPoint3);
-              edgemap.erase(std::make_pair(idPoint1,idPoint3));
-              edgemap.erase(std::make_pair(idPoint3,idPoint1));
-          }
-          else{
-              int autreFace = edgemap[std::make_pair(idPoint3,idPoint1)];
-              addAdjacence(autreFace,i, idPoint1, idPoint3);
-              edgemap.erase(std::make_pair(idPoint3,idPoint1));
-              edgemap.erase(std::make_pair(idPoint1,idPoint3));
-          }
-        }
-
-
-
-        //Gestion des adjacences : troisième adjacence, sur l'arête entre le point3 et le point2
-        //Le fonctionnement est identique
-        if ((edgemap.find(std::make_pair(idPoint3,idPoint2)) == edgemap.end()) &&
-                (edgemap.find(std::make_pair(idPoint2,idPoint3)) == edgemap.end())){
-            edgemap[std::make_pair(idPoint3,idPoint2)] = i;
-            edgemap[std::make_pair(idPoint2,idPoint3)] = i;
-        } else {
-          if (edgemap.find(std::make_pair(idPoint3,idPoint2)) != edgemap.end()){
-              int autreFace = edgemap[std::make_pair(idPoint3,idPoint2)];
-              addAdjacence(autreFace,i, idPoint3, idPoint2);
-              edgemap.erase(std::make_pair(idPoint3,idPoint2));
-              edgemap.erase(std::make_pair(idPoint2,idPoint3));
-          }
-          else{
-              int autreFace = edgemap[std::make_pair(idPoint2,idPoint3)];
-              addAdjacence(autreFace,i, idPoint3, idPoint2);
-              edgemap.erase(std::make_pair(idPoint2,idPoint3));
-              edgemap.erase(std::make_pair(idPoint3,idPoint2));
-          }
-        }
-    }
-
+    else std::cerr << "Unable to open file";
 }
 
 //Test d'adjacence entre les faces
@@ -507,11 +337,8 @@ double Mesh::getLocalCurvature(int point){
     Vertex* pi = this->getPointPointeur(point);
     int i = 0;
 
-    //std::cout<<"Point : "<<point<<std::endl;
     Circulator_on_faces cf = this->beginCircFaces(point);
     do {
-        //std::cout<<cf.getIndFace()<<std::endl;
-
         int iPi = cf->getPlacePoint(point);
         double a = this->cotan(cf.getIndFace(), iPi+2 % 3);
         Vertex* pj = this->getPointPointeur(cf->point((iPi + 1) % 3));
@@ -524,12 +351,7 @@ double Mesh::getLocalCurvature(int point){
         ly += (pj->getPoint()->y() - pi->getPoint()->y())*a*b;
         lz += (pj->getPoint()->z() - pi->getPoint()->z())*a*b;
         i++;
-        //if (i%100 == 0){
-        //    std::cout<<i<<std::endl;
-        //}
-        //if (point == 994){
-        //    std::cout<<"Méchant point"<<std::endl;
-        //}
+
         ++cf;
     } while (!(cf == this->endCircFaces(point)));
 
@@ -652,13 +474,7 @@ void Mesh::drawMeshPoints() {
         const double l = 0.99;
         const double max = 20;
         const double min = 0;
-        //if (vertexTab[i].getLocalCurvature() > 300){
-        //    std::cout<<"a "<<vertexTab[i].getLocalCurvature()<<std::endl;
-        //    std::cout<<"b "<<(vertexTab[i].getLocalCurvature() - min) / (max - min)<<std::endl;
-        //    std::cout<<"c "<<240 + (360 - 240)*(vertexTab[i].getLocalCurvature() - min) / (max - min)<<std::endl;
-        //}
         HSVtoRGB(color, 120. + (360. - 120.)*(std::min(vertexTab[i].getLocalCurvature(), max) - min) / (max - min), s, l);
-        // HSVtoRGB(color, 120. + (360. - 120.)*(max - min) / (max - min), s, l);
         glColor3i(color[0], color[1], color[2]);
         glBegin(GL_POINTS);
             glVertexDraw(*vertexTab[i].getPoint());
