@@ -519,12 +519,12 @@ double Mesh::getLocalCurvature(int point){
         ly += (pj->getPoint()->y() - pi->getPoint()->y())*a*b;
         lz += (pj->getPoint()->z() - pi->getPoint()->z())*a*b;
         i++;
-        if (i%100 == 0){
-            std::cout<<i<<std::endl;
-        }
-        if (point == 994){
-            std::cout<<"Méchant point"<<std::endl;
-        }
+        //if (i%100 == 0){
+        //    std::cout<<i<<std::endl;
+        //}
+        //if (point == 994){
+        //    std::cout<<"Méchant point"<<std::endl;
+        //}
         ++cf;
     } while (!(cf == this->endCircFaces(point)));
 
@@ -643,11 +643,11 @@ void Mesh::drawMeshPoints() {
         color[1] = 0;
         color[2] = 0;
 
-        const double s = 0.1;
-        const double l = 0.1;
-        const double max = 2891;
+        const double s = 0.9;
+        const double l = 0.9;
+        const double max = 546;
         const double min = 0;
-        if (getLocalCurvature(i) < 1){
+        if (getLocalCurvature(i) > 546){
             std::cout<<"a "<<getLocalCurvature(i)<<std::endl;
             std::cout<<"b "<<(getLocalCurvature(i) - min) / (max - min)<<std::endl;
             std::cout<<"c "<<240 + (360 - 240)*(getLocalCurvature(i) - min) / (max - min)<<std::endl;
