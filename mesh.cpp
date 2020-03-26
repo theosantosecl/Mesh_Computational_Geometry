@@ -438,10 +438,7 @@ Circulator_on_faces Mesh::beginCircFaces(int point){
 
 Circulator_on_faces Mesh::endCircFaces(int point){
     Circulator_on_faces circ(this, point);
-    Face* firstFace = this->getFacePointeur(circ.getIndFace());
-    int sommetPrecedentPlace = ((firstFace->getPlacePoint(circ.getIndPointCentral()))+2)%3;
-    int faceOpposee = firstFace->getAdjFaces()[sommetPrecedentPlace];
-    circ.setIndFace(faceOpposee);
+    circ.setIndFace(circ.getIndFace());
     return circ;
 }
 
@@ -514,7 +511,9 @@ double Mesh::getLocalCurvature(int point){
     int i = 0;
 
     //std::cout<<"Point : "<<point<<std::endl;
-    for (Circulator_on_faces cf = this->beginCircFaces(point); !(cf == this->endCircFaces(point)); ++cf){
+
+    Circulator_on_faces cf = this->beginCircFaces(point);
+    do {
         //std::cout<<cf.getIndFace()<<std::endl;
 
         int iPi = cf->getPlacePoint(point);
@@ -535,7 +534,8 @@ double Mesh::getLocalCurvature(int point){
         if (point == 994){
             //std::cout<<"Méchant point"<<std::endl;
         }
-    }
+        ++cf;
+    } while (!(cf == this->endCircFaces(point)));
 
     return (std::sqrt(lx*lx + ly*ly + lz*lz)/(2.*s))/2.;
 }
@@ -657,6 +657,7 @@ void Mesh::drawMeshPoints() {
         const double max = 1000;
         const double min = 1;
         HSVtoRGB(color, (getLocalCurvature(i) - min) / max, s, l);
+        if (i%100 == 0) std::cout<<"Couleur de "<<i<<" : "<<color[0]<<" "<<color[1]<<" "<<color[2]<<std::endl;
         glColor3i(color[0], color[1], color[2]);
         glBegin(GL_POINTS);
             glVertexDraw(*vertexTab[i].getPoint());
